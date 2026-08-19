@@ -1,0 +1,77 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "scoutlane-worker-app",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-08-17",
+  "compatibility_flags": ["nodejs_compat"],
+  "preview_urls": false,
+  "workers_dev": true,
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": true
+  },
+  "vars": {
+    "APP_NAME": "Scout Lane",
+    "ENVIRONMENT": "production",
+    "CF_AI_GATEWAY_ID": "scoutlane-ai-gateway",
+    "GLM_MODEL": "glm-5.2",
+    "GLM_MODEL_EFFICIENT": "glm-4.7-flashx",
+    "GLM_MODEL_FREE": "glm-4.7-flash",
+    "MCP_PUBLIC_URL": "https://scoutlane-worker-mcp.sornkan.workers.dev"
+  },
+  "observability": {
+    "enabled": true,
+    "logs": { "head_sampling_rate": 1 },
+    "traces": { "enabled": true, "head_sampling_rate": 0.1 }
+  },
+  "ai": { "binding": "AI" },
+  "d1_databases": [
+    {
+      "binding": "DB_MAIN",
+      "database_name": "scoutlane-d1-main",
+      "database_id": "b7af2d79-2eb7-4b47-bd54-2cad1fdf8ab4",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "kv_namespaces": [
+    {
+      "binding": "KV_SESSIONS",
+      "id": "69c207b012034579b7ca3c1b03d689bf"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "R2_RESUMES",
+      "bucket_name": "scoutlane-r2-resumes"
+    }
+  ],
+  "vectorize": [
+    {
+      "binding": "VEC_CANDIDATES",
+      "index_name": "scoutlane-vector-candidates"
+    }
+  ],
+  "queues": {
+    "producers": [
+      { "binding": "SCREEN_QUEUE", "queue": "scoutlane-queue-screen" }
+    ],
+    "consumers": [
+      { "queue": "scoutlane-queue-screen", "max_batch_size": 1, "max_retries": 2 }
+    ]
+  },
+  "durable_objects": {
+    "bindings": [
+      { "name": "SLOT_LOCK", "class_name": "SlotLock" },
+      { "name": "LANE_HUB", "class_name": "LaneHub" }
+    ]
+  },
+  "migrations": [
+    { "tag": "v1", "new_sqlite_classes": ["SlotLock"] },
+    { "tag": "v2", "new_sqlite_classes": ["LaneHub"] }
+  ],
+  "analytics_engine_datasets": [
+    { "binding": "METRICS", "dataset": "scoutlane-metrics" }
+  ]
+}

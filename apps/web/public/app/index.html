@@ -1,0 +1,426 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Scout Lane</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css?v=mira3">
+  <script src="/theme-boot.js?v=mira2"></script>
+</head>
+<body>
+  <div class="shell">
+    <aside class="side">
+      <div class="brand">
+        <div class="mark" aria-hidden="true">S</div>
+        <div>
+          <h1>Scout Lane</h1>
+          <small>เลนสรรหา</small>
+        </div>
+      </div>
+      <nav>
+        <span class="nav-pill" id="nav-pill" aria-hidden="true"></span>
+        <button data-tab="home" class="on">
+          <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg></span>
+          ภาพรวม
+        </button>
+
+        <div class="nav-group">
+          <span class="nav-label">AI</span>
+          <button data-tab="scout">
+            <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></span>
+            AI ค้นคน
+          </button>
+          <button data-tab="screen">
+            <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg></span>
+            AI คัดเรซูเม่
+          </button>
+        </div>
+
+        <div class="nav-group">
+          <span class="nav-label">ติดตาม</span>
+          <button data-tab="board">
+            <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M8 7v10"/><path d="M16 7v4"/></svg></span>
+            Pipeline
+          </button>
+        </div>
+
+        <div class="nav-group">
+          <span class="nav-label">นัดหมาย</span>
+          <button data-tab="schedule">
+            <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg></span>
+            ปฏิทิน
+          </button>
+        </div>
+
+        <div class="nav-group" id="desk-group">
+          <span class="nav-label">ระบบ</span>
+          <button data-tab="users" hidden>
+            <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
+            ผู้ใช้
+          </button>
+          <button data-tab="profile">
+            <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+            โปรไฟล์
+          </button>
+          <button data-tab="settings">
+            <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg></span>
+            Settings
+          </button>
+        </div>
+      </nav>
+      <div class="side-foot">
+        <span class="avatar" id="who-mark" aria-hidden="true">A</span>
+        <div>
+          <p class="who" id="who"></p>
+          <button id="logout" type="button">ออกจากระบบ</button>
+        </div>
+      </div>
+    </aside>
+
+    <div class="workspace">
+      <header class="topbar">
+        <div class="top-left">
+          <p class="crumb">
+            <span>Scout Lane</span>
+            <i aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></i>
+            <span id="page-mod">ภาพรวม</span>
+          </p>
+          <h2 id="page-title">เลนวันนี้</h2>
+        </div>
+        <div class="top-right">
+          <label class="search-pill">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            <input type="search" placeholder="ค้นในเลน…" readonly>
+            <kbd>⌘K</kbd>
+          </label>
+          <div class="looks" data-looks></div>
+          <span class="avatar" id="top-avatar" aria-hidden="true">A</span>
+        </div>
+      </header>
+      <main>
+        <section data-panel="home" class="page-enter">
+          <div class="stats">
+            <div class="stat"><div class="l">ผู้สมัครในระบบ</div><div class="n" id="stat-people">0</div></div>
+            <div class="stat"><div class="l">นัดสัมภาษณ์</div><div class="n" id="stat-meets">0</div></div>
+            <div class="stat"><div class="l">ตำแหน่งงาน</div><div class="n" id="stat-jobs">0</div></div>
+          </div>
+          <div class="mods">
+            <button class="mod" type="button" data-go="scout">
+              <span class="mod-top">
+                <span class="mod-ico"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></span>
+                <span class="mod-go" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></span>
+              </span>
+              <strong>AI ค้นคน</strong>
+              <small>ดึง API สาธารณะ — LinkedIn ไม่ดึง</small>
+            </button>
+            <button class="mod" type="button" data-go="screen">
+              <span class="mod-top">
+                <span class="mod-ico"><svg viewBox="0 0 24 24"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg></span>
+                <span class="mod-go" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></span>
+              </span>
+              <strong>AI คัดเรซูเม่</strong>
+              <small>คะแนน 3 ด้าน + เหตุผล + คำถาม</small>
+            </button>
+            <button class="mod" type="button" data-go="board">
+              <span class="mod-top">
+                <span class="mod-ico"><svg viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M8 7v10"/><path d="M16 7v4"/></svg></span>
+                <span class="mod-go" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></span>
+              </span>
+              <strong>Pipeline</strong>
+              <small>ตามว่าคนผ่านขั้นไหนแล้ว</small>
+            </button>
+            <button class="mod" type="button" data-go="schedule">
+              <span class="mod-top">
+                <span class="mod-ico"><svg viewBox="0 0 24 24"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg></span>
+                <span class="mod-go" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></span>
+              </span>
+              <strong>ปฏิทินนัด</strong>
+              <small>เลือกวัน แล้วกดช่องว่าง</small>
+            </button>
+          </div>
+          <div class="panel ai-lane">
+            <p class="eyebrow">AI ในเลนนี้</p>
+            <h3>โมเดลทำงานตรงไหน — ไม่ใช่แชทลอย ๆ</h3>
+            <div class="ai-steps">
+              <div class="ai-step"><span class="ord">1 · ค้นคน</span><strong>จัดอันดับจาก JD</strong><small class="muted">ดึงเฉพาะ API สาธารณะ แล้วให้คะแนนความเข้ากัน — LinkedIn ไม่ได้อยู่ใน shortlist</small></div>
+              <div class="ai-step"><span class="ord">2 · คัดเรซูเม่</span><strong>คะแนน 3 ด้าน 0–10</strong><small class="muted">Skills / Experience / Culture + จุดแข็ง ธงแดง และคำถามโทรสั้น</small></div>
+              <div class="ai-step"><span class="ord">3 · นัดสัมภาษณ์</span><strong>ชุดคำถามให้ทีม</strong><small class="muted">ยัดลงคำอธิบายนัดในปฏิทิน ไม่ให้ไปถามทั่วไป</small></div>
+            </div>
+          </div>
+          <div class="panel next-card">
+            <h3>นัดถัดไป</h3>
+            <div id="home-next" class="muted">ยังไม่มีนัด</div>
+          </div>
+        </section>
+
+        <section data-panel="scout" hidden>
+          <div class="grid scout-desk">
+            <div class="panel">
+              <label>ขั้นแรก · หาใคร</label>
+              <div class="who-row" id="origin-row">
+                <button type="button" data-origin="thai" class="on">คนไทยเท่านั้น</button>
+              </div>
+              <p class="muted" id="origin-hint">ล็อกคนไทยแล้ว — ชื่อไทย หรือบอกเองว่าเป็นคนไทย ไม่ดึงต่างชาติ</p>
+              <label>ตำแหน่ง</label>
+              <input id="jd-title" maxlength="160" value="Tech Lead / Senior Developer (AI Workflow &amp; Automation)">
+              <label>Job description</label>
+              <textarea id="jd-text" maxlength="12000">H+ Hotel Plus / บริษัท พักดีพลัส จำกัด
+Hybrid Working | เข้าออฟฟิศทุกวันพุธ · Siam Pathumwan House ถนนพญาไท
+จันทร์–ศุกร์ และ 1 เสาร์/เดือน · 09.00–18.00
+
+Tech Lead / Senior Developer (AI Workflow &amp; Automation)
+วิเคราะห์ requirement ออกแบบ architecture และ data flow
+พัฒนา AI workflow, automation, LLM, RAG, MCP
+full stack web และ internal tools
+REST API, webhook, OAuth, Google Workspace, LINE
+database, data pipeline, ETL, deploy และถ่ายทอดความรู้
+
+Stack: React, TypeScript, Node.js, Express, PostgreSQL, MongoDB, OpenAI, Claude, Gemini, RAG, MCP
+ประสบการณ์ 3–5 ปี และโครงการ AI automation อย่างน้อย 3 โครงการ</textarea>
+              <div class="row">
+                <button class="btn" id="jd-search">ค้นแหล่งสาธารณะ</button>
+              </div>
+              <p class="muted" id="scout-meta"></p>
+              <ol class="scout-log" id="scout-log"></ol>
+              <details class="source-fold">
+                <summary>แผนที่แหล่ง — ดึงอะไร / ไม่ดึงอะไร</summary>
+                <p class="muted" id="source-analysis">LinkedIn ไม่ดึง — เปิด People Search ให้ HR กดเอง</p>
+                <div class="lanes" id="source-lanes"></div>
+              </details>
+            </div>
+            <div class="panel" id="shortlist-panel">
+              <h3>คนจากแหล่งสาธารณะ</h3>
+              <p class="muted">ทุกคนต้องมีลิงก์โปรไฟล์สาธารณะ — ไม่มีลิงก์ไม่ขึ้นลิสต์ · คนที่เปิดรับงานอยู่บนสุด</p>
+              <div id="shortlist"></div>
+              <div class="row">
+                <button class="btn" id="approve">ส่งที่เลือกเข้าท่อ</button>
+                <button class="btn ghost" id="approve-all" type="button">ส่งทั้งหมดเข้าท่อ</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section data-panel="screen" hidden>
+          <p class="muted" style="margin:0 0 12px">วางเรซูเม่หรืออัปโหลด PDF แล้ว AI ให้คะแนน 3 ด้านเทียบกับ JD ของตำแหน่งนี้</p>
+          <div class="grid">
+            <form class="panel" id="screen-form">
+              <label>ตำแหน่ง</label>
+              <select id="screen-job" name="jobId" required></select>
+              <div class="row">
+                <input id="new-job-title" placeholder="หรือสร้างตำแหน่งใหม่" maxlength="160">
+                <button class="btn ghost" type="button" id="new-job-add">สร้างตำแหน่ง</button>
+              </div>
+              <textarea id="new-job-desc" placeholder="คำอธิบายตำแหน่ง (อย่างน้อย 10 ตัวอักษร)" maxlength="12000"></textarea>
+              <label>ชื่อ</label>
+              <input name="name" required maxlength="160">
+              <label>อีเมล (ไม่บังคับ)</label>
+              <input name="email" type="email" maxlength="200">
+              <label>วางข้อความเรซูเม่</label>
+              <textarea name="text" maxlength="20000"></textarea>
+              <label>หรืออัปโหลด PDF</label>
+              <input name="file" type="file" accept="application/pdf">
+              <div class="row"><button class="btn" type="submit">ให้คะแนน</button></div>
+            </form>
+            <div class="panel" id="scorecard"><p class="muted">ผลคะแนน Skills / Experience / Culture จะขึ้นที่นี่ พร้อมเหตุผลและคำถามโทรสั้น</p></div>
+          </div>
+        </section>
+
+        <section data-panel="board" hidden>
+          <p class="muted" style="margin:0 0 10px">ท่อสมัครทั้งเส้น — ลากการ์ดหรือเลือกขั้น เปิดการ์ดเพื่อแก้ข้อมูลและดูคะแนน AI</p>
+          <div class="funnel" id="funnel"></div>
+          <div class="row">
+            <input id="manual-name" placeholder="ชื่อผู้สมัคร" maxlength="160">
+            <input id="manual-source" placeholder="แหล่ง เช่น referral" value="manual" maxlength="40">
+            <button class="btn" id="manual-add">เพิ่มมือ</button>
+            <select id="filter-stage"><option value="">ทุกสเตจ</option></select>
+            <select id="filter-source"><option value="">ทุกแหล่ง</option></select>
+            <select id="filter-job"><option value="">ทุกตำแหน่ง</option></select>
+            <div class="view-toggle">
+              <button class="btn ghost on" type="button" id="view-board">บอร์ด</button>
+              <button class="btn ghost" type="button" id="view-list">ลิสต์</button>
+            </div>
+          </div>
+          <div class="board" id="board"></div>
+          <div class="veil" id="drawer-veil" hidden></div>
+          <aside class="drawer" id="person-drawer" hidden>
+            <div class="drawer-top">
+              <button class="btn ghost" type="button" id="drawer-close">ปิด</button>
+            </div>
+            <p class="eyebrow" id="drawer-src"></p>
+            <h2 id="drawer-name"></h2>
+            <form id="person-edit" class="person-edit">
+              <label>ชื่อ</label>
+              <input id="edit-name" maxlength="160">
+              <label>อีเมล</label>
+              <input id="edit-email" type="email" maxlength="200">
+              <label>โทร</label>
+              <input id="edit-phone" maxlength="40">
+              <div class="row">
+                <button class="btn ghost" type="submit">บันทึกข้อมูล</button>
+                <button class="btn ghost" type="button" id="person-del">ลบออกจากท่อ</button>
+              </div>
+              <p class="muted" id="edit-msg"></p>
+            </form>
+            <div class="step-nav">
+              <button class="btn ghost" type="button" id="step-prev">← ก่อนหน้า</button>
+              <span id="step-pos" class="muted"></span>
+              <button class="btn ghost" type="button" id="step-next">ขั้นถัดไป →</button>
+            </div>
+            <div class="track" id="person-track">
+              <div class="track-glow"></div>
+              <div class="track-fill" aria-hidden="true"></div>
+              <div class="token" id="person-token" aria-hidden="true"></div>
+              <div class="track-stops" id="drawer-steps"></div>
+            </div>
+            <div id="step-body" class="step-body"></div>
+          </aside>
+        </section>
+
+        <section data-panel="schedule" hidden>
+          <div class="cal-head">
+            <div class="cal-nav">
+              <button class="btn ghost" id="cal-prev" type="button">←</button>
+              <button class="btn ghost" id="cal-today" type="button">วันนี้</button>
+              <button class="btn ghost" id="cal-next" type="button">→</button>
+              <strong id="cal-range"></strong>
+            </div>
+            <p class="muted" id="book-msg">ตารางสัปดาห์รายชั่วโมง · ลาย = ไม่ว่าง · ก้อนสี = นัดในเลน</p>
+            <a class="btn ghost" id="google-connect" href="/api/schedule/oauth/start?kind=team">เชื่อมปฏิทินทีม</a>
+          </div>
+          <div class="who-row" id="cal-who"></div>
+          <div class="desk-cal">
+            <aside class="mini-month" id="mini-month"></aside>
+            <div class="weekbox">
+              <div class="week-grid" id="week-grid"></div>
+            </div>
+            <form class="panel book-card" id="book-form">
+              <div id="pick-empty" class="pick-empty">
+                <strong>ยังไม่ได้เลือกเวลา</strong>
+                <p class="muted">คลิกช่องว่างทางซ้าย แล้วช่วงนัดจะโชว์ที่นี่</p>
+              </div>
+              <div id="pick-card" hidden>
+                <p class="eyebrow">ช่วงที่เลือก</p>
+                <div class="pick-when" id="pick-when"></div>
+                <label>ผู้สมัคร</label>
+                <select id="book-candidate" required></select>
+                <label>คนสัมภาษณ์</label>
+                <select id="book-interviewer"></select>
+                <label>ความยาว</label>
+                <div class="dur" id="dur-pills">
+                  <button type="button" data-min="15">15</button>
+                  <button type="button" data-min="30">30</button>
+                  <button type="button" data-min="45" class="on">45</button>
+                  <button type="button" data-min="60">60</button>
+                  <button type="button" data-min="90">90</button>
+                </div>
+                <input name="startsAt" type="hidden">
+                <input name="minutes" type="hidden" value="45">
+                <div class="row"><button class="btn" type="submit">ยืนยันนัดนี้</button></div>
+              </div>
+              <p class="err" id="book-err"></p>
+              <div id="upcoming"></div>
+            </form>
+          </div>
+        </section>
+
+        <section data-panel="users" hidden>
+          <div class="panel">
+            <div class="row">
+              <input id="user-name" placeholder="username" autocomplete="off" maxlength="32">
+              <input id="user-pass" type="password" placeholder="password ≥ 10" autocomplete="new-password" maxlength="200">
+              <select id="user-role">
+                <option value="member">member</option>
+                <option value="admin">admin</option>
+              </select>
+              <button class="btn" id="user-add">เพิ่มผู้ใช้</button>
+            </div>
+            <p class="muted" id="user-msg"></p>
+            <table>
+              <thead><tr><th>ชื่อ</th><th>บทบาท</th><th>สถานะ</th><th></th></tr></thead>
+              <tbody id="user-rows"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section data-panel="profile" hidden>
+          <div class="grid">
+            <div class="panel">
+              <h3>บัญชี</h3>
+              <p class="muted" id="profile-who"></p>
+              <label>รหัสผ่านใหม่</label>
+              <div class="row">
+                <input id="me-password" type="password" placeholder="รหัสผ่านใหม่ ≥ 10" autocomplete="new-password" maxlength="200">
+                <button class="btn" id="me-password-save">เปลี่ยนรหัสผ่าน</button>
+              </div>
+              <p class="muted" id="me-password-msg"></p>
+              <label>เมลล์ปฏิทิน Google</label>
+              <div class="row">
+                <input id="me-cal-email" type="email" placeholder="you@company.com" maxlength="200" autocomplete="email">
+                <button class="btn ghost" id="me-cal-save" type="button">บันทึกเมลล์</button>
+              </div>
+              <p class="muted" id="me-cal-msg"></p>
+              <a class="btn ghost" id="google-me" href="/api/schedule/oauth/start?kind=me" hidden>เชื่อม Gmail ของฉัน</a>
+              <p class="muted" id="google-me-status"></p>
+            </div>
+            <div class="panel">
+              <h3>เชื่อม MCP แบบ OAuth</h3>
+              <p class="muted">วาง URL นี้เป็น custom connector — ไคลเอนต์จะค้นพบ OAuth แล้วเด้งหน้าเข้าสู่ระบบ Scout Lane ให้เอง ไม่ต้องวาง token</p>
+              <div class="row">
+                <pre class="token-box" id="mcp-url" style="flex:1;margin:0">http://127.0.0.1:8790/mcp</pre>
+                <button class="btn ghost" id="copy-mcp-url" type="button">คัดลอก</button>
+              </div>
+              <p class="muted" id="copy-mcp-msg"></p>
+              <ol class="muted" style="padding-left:1.2rem;line-height:1.55">
+                <li>Claude: Customize → Connectors → Add custom connector → วาง URL</li>
+                <li>ChatGPT: Settings → Apps &amp; Connectors → Create → Auth = OAuth → วาง URL</li>
+                <li>Gemini / Grok: เพิ่ม custom MCP แล้ววาง URL เดียวกัน</li>
+              </ol>
+              <p class="muted">คอนเนกเตอร์บนคลาวด์ต้องเป็น HTTPS — ของเครื่องนี้ใช้ได้กับ localhost ตอนรัน <code>npm run dev:mcp</code></p>
+              <p class="muted">หรือสร้าง PAT ด้านล่างถ้าเครื่องมือยังไม่รองรับ OAuth</p>
+              <div class="row">
+                <input id="token-name" value="cowork" maxlength="80">
+                <button class="btn" id="mint-token">สร้าง token</button>
+              </div>
+              <pre id="token-out" class="token-box muted"></pre>
+              <table>
+                <thead><tr><th>ชื่อ</th><th>สร้างเมื่อ</th><th></th></tr></thead>
+                <tbody id="token-rows"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <section data-panel="settings" hidden>
+          <div class="panel" data-looks="board" style="margin-bottom:16px"></div>
+          <div class="panel" id="cal-settings" hidden style="margin-bottom:16px">
+            <h3>ปฏิทินทีม</h3>
+            <p class="muted">ค่าเริ่มคือแชร์ปฏิทินให้บัญชีทีม — โหมดอื่นเปิดไว้ถ้าทีมใช้หลาย Gmail</p>
+            <label class="radio"><input type="radio" name="cal-mode" value="share" checked> แชร์ปฏิทินให้บัญชีทีม</label>
+            <label class="radio"><input type="radio" name="cal-mode" value="personal"> แต่ละคนเชื่อม Gmail เอง</label>
+            <label class="radio"><input type="radio" name="cal-mode" value="both"> ทั้งสองแบบ</label>
+            <label>เมลล์ที่ถามว่าง (บรรทัดละหนึ่ง)</label>
+            <textarea id="cal-share-emails" rows="4" placeholder="mint@hplus.com"></textarea>
+            <div class="row">
+              <button class="btn" id="cal-settings-save" type="button">บันทึกโหมด</button>
+              <a class="btn ghost" href="/api/schedule/oauth/start?kind=team">เชื่อมบัญชีทีม</a>
+            </div>
+            <p class="muted" id="cal-settings-msg"></p>
+          </div>
+          <div id="admin-prompts" hidden>
+            <h3>Prompt ของเลน</h3>
+            <p class="muted">เก็บในระบบ ไม่ได้อยู่ใน repo — แก้แล้วใช้รอบถัดไปทันที</p>
+            <div id="prompt-list"></div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+  <script src="/theme.js?v=mira2"></script>
+  <script src="/app.js?v=mira3"></script>
+</body>
+</html>

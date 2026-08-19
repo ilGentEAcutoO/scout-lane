@@ -1,0 +1,49 @@
+# ──────────────────────────────────────────
+# Session / auth
+# generate: openssl rand -base64 32
+# ──────────────────────────────────────────
+SESSION_SECRET=
+# first admin if the users table is empty
+BOOTSTRAP_USERNAME=admin
+# generate: openssl rand -base64 24
+BOOTSTRAP_PASSWORD=
+
+# ──────────────────────────────────────────
+# GLM  (server-side only)
+# get from: https://z.ai/manage-apikey/apikey-list
+# ──────────────────────────────────────────
+LLM_PROVIDER=glm
+GLM_API_KEY=
+GLM_BASE_URL=https://api.z.ai/api/paas/v4
+GLM_MODEL=glm-5.2
+GLM_MODEL_EFFICIENT=glm-4.7-flashx
+GLM_MODEL_FREE=glm-4.7-flash
+# Cloudflare account id enables AI Gateway proxy (scoutlane-ai-gateway)
+# get from: https://dash.cloudflare.com
+CF_ACCOUNT_ID=
+CF_AI_GATEWAY_ID=scoutlane-ai-gateway
+
+# Public MCP worker URL shown on the profile page
+MCP_PUBLIC_URL=http://127.0.0.1:8790
+
+# ──────────────────────────────────────────
+# GitHub search  (optional public PAT)
+# get from: https://github.com/settings/tokens
+# ──────────────────────────────────────────
+GITHUB_TOKEN=
+
+# ──────────────────────────────────────────
+# Apify  (optional — public-host search only; LinkedIn stays official links)
+# get from: https://console.apify.com/settings/integrations
+# APIFY_WIDE=1 adds Sessionize/Hashnode hosts (phase A)
+# ──────────────────────────────────────────
+APIFY_TOKEN=
+APIFY_WIDE=
+
+# ──────────────────────────────────────────
+# Google Calendar  (optional — local calendar works without it)
+# get from: https://console.cloud.google.com/apis/credentials
+# ──────────────────────────────────────────
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+GOOGLE_REDIRECT_URI=http://localhost:8787/api/schedule/oauth/callback

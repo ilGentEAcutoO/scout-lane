@@ -1,0 +1,25 @@
+{
+  "name": "@scout-lane/web",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev --port 8787 --persist-to ../../.wrangler/state",
+    "types": "wrangler types",
+    "check": "tsc --noEmit",
+    "test": "vitest run",
+    "migrate:local": "wrangler d1 migrations apply scoutlane-d1-main --local --persist-to ../../.wrangler/state",
+    "migrate:remote": "wrangler d1 migrations apply scoutlane-d1-main --remote"
+  },
+  "dependencies": {
+    "@scout-lane/core": "*",
+    "hono": "^4.9.7",
+    "unpdf": "^1.8.1",
+    "zod": "^4.0.17"
+  },
+  "devDependencies": {
+    "@types/node": "^26.2.0",
+    "typescript": "^5.9.2",
+    "vitest": "^3.2.4",
+    "wrangler": "^4.123.0"
+  }
+}

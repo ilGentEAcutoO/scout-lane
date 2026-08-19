@@ -1,0 +1,2 @@
+ALTER TABLE interviews ADD COLUMN minutes INTEGER NOT NULL DEFAULT 45;
+ALTER TABLE interviews ADD COLUMN meet_url TEXT;
