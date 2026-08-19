@@ -1,0 +1,21 @@
+{
+  "name": "@scout-lane/mcp",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev --port 8790 --persist-to ../../.wrangler/state",
+    "types": "wrangler types",
+    "check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/server": "^2.0.0",
+    "@scout-lane/core": "*",
+    "agents": "^0.20.1",
+    "zod": "^4.0.17"
+  },
+  "devDependencies": {
+    "@types/node": "^26.2.0",
+    "typescript": "^5.9.2",
+    "wrangler": "^4.123.0"
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "scoutlane-worker-mcp",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-08-17",
+  "compatibility_flags": ["nodejs_compat"],
+  "preview_urls": false,
+  "workers_dev": true,
+  "vars": {
+    "APP_NAME": "Scout Lane MCP",
+    "ENVIRONMENT": "production",
+    "CF_AI_GATEWAY_ID": "scoutlane-ai-gateway",
+    "GLM_MODEL": "glm-5.2",
+    "GLM_MODEL_EFFICIENT": "glm-4.7-flashx",
+    "GLM_MODEL_FREE": "glm-4.7-flash"
+  },
+  "ai": { "binding": "AI" },
+  "observability": {
+    "enabled": true,
+    "logs": { "head_sampling_rate": 1 }
+  },
+  "d1_databases": [
+    {
+      "binding": "DB_MAIN",
+      "database_name": "scoutlane-d1-main",
+      "database_id": "b7af2d79-2eb7-4b47-bd54-2cad1fdf8ab4",
+      "migrations_dir": "../web/migrations"
+    }
+  ],
+  "kv_namespaces": [
+    {
+      "binding": "KV_SESSIONS",
+      "id": "69c207b012034579b7ca3c1b03d689bf"
+    }
+  ]
+}
