@@ -1,0 +1,43 @@
+# ──────────────────────────────────────────
+# Session / auth
+# generate: openssl rand -base64 32
+# ──────────────────────────────────────────
+SESSION_SECRET=
+# generate: openssl rand -base64 24
+HR_PASSWORD=
+
+# ──────────────────────────────────────────
+# GLM  (server-side only)
+# get from: https://z.ai/manage-apikey/apikey-list
+# ──────────────────────────────────────────
+LLM_PROVIDER=glm
+GLM_API_KEY=
+GLM_BASE_URL=https://api.z.ai/api/paas/v4
+GLM_MODEL=glm-5.2
+GLM_MODEL_EFFICIENT=glm-4.7-flashx
+GLM_MODEL_FREE=glm-4.7-flash
+# get from: https://dash.cloudflare.com
+CF_ACCOUNT_ID=
+CF_AI_GATEWAY_ID=scoutlane-ai-gateway
+
+# ──────────────────────────────────────────
+# GitHub search  (optional public PAT)
+# get from: https://github.com/settings/tokens
+# ──────────────────────────────────────────
+GITHUB_TOKEN=
+
+# ──────────────────────────────────────────
+# Apify  (optional — public-host search only; LinkedIn stays official links)
+# get from: https://console.apify.com/settings/integrations
+# APIFY_WIDE=1 adds Sessionize/Hashnode hosts (phase A)
+# ──────────────────────────────────────────
+APIFY_TOKEN=
+APIFY_WIDE=
+
+# ──────────────────────────────────────────
+# Google Calendar  (optional — local calendar works without it)
+# get from: https://console.cloud.google.com/apis/credentials
+# ──────────────────────────────────────────
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+GOOGLE_REDIRECT_URI=http://localhost:8787/api/schedule/oauth/callback

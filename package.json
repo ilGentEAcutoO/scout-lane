@@ -1,0 +1,14 @@
+{
+  "name": "scout-lane",
+  "private": true,
+  "workspaces": ["apps/*", "packages/*"],
+  "scripts": {
+    "dev": "npm run dev -w @scout-lane/web",
+    "dev:mcp": "npm run dev -w @scout-lane/mcp",
+    "types": "npm run types -w @scout-lane/web && npm run types -w @scout-lane/mcp",
+    "check": "npm run check -w @scout-lane/core && npm run check -w @scout-lane/web && npm run check -w @scout-lane/mcp",
+    "test": "npm run test -w @scout-lane/web && npm run test -w @scout-lane/core",
+    "test:e2e": "node apps/web/e2e/headed.mjs",
+    "migrate:local": "npm run migrate:local -w @scout-lane/web"
+  }
+}
