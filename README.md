@@ -81,6 +81,10 @@ Live (separate Workers):
 - App: https://scoutlane-worker-app.sornkan.workers.dev
 - MCP: https://scoutlane-worker-mcp.sornkan.workers.dev/mcp
 
+## Demo
+
+Walkthrough (~3 min) of all four modules: [`demo/scout-lane.mp4`](demo/scout-lane.mp4)
+
 Custom connector (Claude / Grok / ChatGPT / Gemini): ใส่ `https://scoutlane-worker-mcp.sornkan.workers.dev/mcp` — ไคลเอนต์อ่าน OAuth metadata แล้วเปิดหน้าเข้าสู่ระบบของ Scout Lane อัตโนมัติ (authorization code + PKCE). โปรไฟล์ใน UI ใช้สร้าง/เพิกถอน PAT ได้ถ้าเครื่องมือยังไม่รองรับ OAuth.
 
 Cowork / Claude example:

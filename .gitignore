@@ -19,6 +19,7 @@ apps/agent-temp/
 instruction/work/
 videos/**/node_modules/
 videos/**/.hyperframes/
+videos/**/renders/
 brag-output*/
 
 # Google OAuth client downloads — never commit
