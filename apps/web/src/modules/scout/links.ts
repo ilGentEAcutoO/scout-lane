@@ -59,6 +59,7 @@ export function officialSearchUrls(query: string, location = "Bangkok"): Officia
     { id: "langchainhub", label: "LangChain smith", url: `https://smith.langchain.com/hub?q=${q}` },
     { id: "mcpgithub", label: "Awesome MCP", url: `https://github.com/search?q=${q}+mcp+server&type=repositories` },
     { id: "kaggle", label: "Kaggle", url: `https://www.kaggle.com/search?q=${q}` },
+    { id: "speakerdeck", label: "Speaker Deck", url: `https://speakerdeck.com/search?q=${q}` },
     { id: "paperswithcode", label: "Papers with Code", url: `https://paperswithcode.com/search?q=${q}` },
   ];
 }

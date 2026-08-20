@@ -8,18 +8,19 @@
   <title>Scout Lane</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/styles.css?v=mira3">
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css?v=mira8">
   <script src="/theme-boot.js?v=mira2"></script>
 </head>
 <body>
   <div class="shell">
-    <aside class="side">
+    <div class="nav-veil" id="nav-veil"></div>
+    <aside class="side" id="side-nav">
       <div class="brand">
         <div class="mark" aria-hidden="true">S</div>
         <div>
           <h1>Scout Lane</h1>
-          <small>เลนสรรหา</small>
+          <small>สรรหาบุคลากร</small>
         </div>
       </div>
       <nav>
@@ -30,14 +31,14 @@
         </button>
 
         <div class="nav-group">
-          <span class="nav-label">AI</span>
+          <span class="nav-label">สรรหา</span>
           <button data-tab="scout">
             <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></span>
-            AI ค้นคน
+            ค้นหา Candidate
           </button>
           <button data-tab="screen">
             <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg></span>
-            AI คัดเรซูเม่
+            คัดกรอง Resume
           </button>
         </div>
 
@@ -45,15 +46,15 @@
           <span class="nav-label">ติดตาม</span>
           <button data-tab="board">
             <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M8 7v10"/><path d="M16 7v4"/></svg></span>
-            Pipeline
+            ผู้สมัคร
           </button>
         </div>
 
         <div class="nav-group">
-          <span class="nav-label">นัดหมาย</span>
+          <span class="nav-label">การสัมภาษณ์</span>
           <button data-tab="schedule">
             <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg></span>
-            ปฏิทิน
+            การสัมภาษณ์
           </button>
         </div>
 
@@ -69,7 +70,7 @@
           </button>
           <button data-tab="settings">
             <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg></span>
-            Settings
+            ตั้งค่า
           </button>
         </div>
       </nav>
@@ -84,30 +85,43 @@
 
     <div class="workspace">
       <header class="topbar">
+        <button class="menu-btn" id="menu-toggle" type="button" aria-label="เปิดเมนู" aria-controls="side-nav" aria-expanded="false">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/></svg>
+        </button>
         <div class="top-left">
           <p class="crumb">
             <span>Scout Lane</span>
             <i aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></i>
             <span id="page-mod">ภาพรวม</span>
           </p>
-          <h2 id="page-title">เลนวันนี้</h2>
+          <h2 id="page-title">ภาพรวม</h2>
         </div>
         <div class="top-right">
-          <label class="search-pill">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-            <input type="search" placeholder="ค้นในเลน…" readonly>
-            <kbd>⌘K</kbd>
-          </label>
           <div class="looks" data-looks></div>
           <span class="avatar" id="top-avatar" aria-hidden="true">A</span>
         </div>
       </header>
       <main>
         <section data-panel="home" class="page-enter">
+          <div class="tab-scope">
+            <div class="page-tabs" role="tablist">
+              <button type="button" class="page-tab on" data-ptab="today">วันนี้</button>
+              <button type="button" class="page-tab" data-ptab="flow">ขั้นตอน</button>
+            </div>
+            <div data-ptab-panel="today">
           <div class="stats">
-            <div class="stat"><div class="l">ผู้สมัครในระบบ</div><div class="n" id="stat-people">0</div></div>
-            <div class="stat"><div class="l">นัดสัมภาษณ์</div><div class="n" id="stat-meets">0</div></div>
-            <div class="stat"><div class="l">ตำแหน่งงาน</div><div class="n" id="stat-jobs">0</div></div>
+            <div class="stat">
+              <span class="ico-dot" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
+              <div><div class="l">ผู้สมัครในระบบ</div><div class="n" id="stat-people">0</div></div>
+            </div>
+            <div class="stat">
+              <span class="ico-dot" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg></span>
+              <div><div class="l">นัดสัมภาษณ์</div><div class="n" id="stat-meets">0</div></div>
+            </div>
+            <div class="stat">
+              <span class="ico-dot" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg></span>
+              <div><div class="l">ตำแหน่งงาน</div><div class="n" id="stat-jobs">0</div></div>
+            </div>
           </div>
           <div class="mods">
             <button class="mod" type="button" data-go="scout">
@@ -115,61 +129,68 @@
                 <span class="mod-ico"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></span>
                 <span class="mod-go" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></span>
               </span>
-              <strong>AI ค้นคน</strong>
-              <small>ดึง API สาธารณะ — LinkedIn ไม่ดึง</small>
+              <strong>ค้นหา Candidate</strong>
+              <small>ดึงโปรไฟล์สาธารณะจาก JD ของตำแหน่ง</small>
             </button>
             <button class="mod" type="button" data-go="screen">
               <span class="mod-top">
                 <span class="mod-ico"><svg viewBox="0 0 24 24"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg></span>
                 <span class="mod-go" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></span>
               </span>
-              <strong>AI คัดเรซูเม่</strong>
-              <small>คะแนน 3 ด้าน + เหตุผล + คำถาม</small>
+              <strong>คัดกรอง Resume</strong>
+              <small>คะแนน 3 ด้าน เทียบกับ JD พร้อมเหตุผล</small>
             </button>
             <button class="mod" type="button" data-go="board">
               <span class="mod-top">
                 <span class="mod-ico"><svg viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M8 7v10"/><path d="M16 7v4"/></svg></span>
                 <span class="mod-go" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></span>
               </span>
-              <strong>Pipeline</strong>
-              <small>ตามว่าคนผ่านขั้นไหนแล้ว</small>
+              <strong>ผู้สมัคร</strong>
+              <small>ตามว่าผู้สมัครอยู่ขั้นไหนแล้ว</small>
             </button>
             <button class="mod" type="button" data-go="schedule">
               <span class="mod-top">
                 <span class="mod-ico"><svg viewBox="0 0 24 24"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg></span>
                 <span class="mod-go" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></span>
               </span>
-              <strong>ปฏิทินนัด</strong>
-              <small>เลือกวัน แล้วกดช่องว่าง</small>
+              <strong>การสัมภาษณ์</strong>
+              <small>เลือกวัน แล้วกดช่องว่างเพื่อนัด</small>
             </button>
-          </div>
-          <div class="panel ai-lane">
-            <p class="eyebrow">AI ในเลนนี้</p>
-            <h3>โมเดลทำงานตรงไหน — ไม่ใช่แชทลอย ๆ</h3>
-            <div class="ai-steps">
-              <div class="ai-step"><span class="ord">1 · ค้นคน</span><strong>จัดอันดับจาก JD</strong><small class="muted">ดึงเฉพาะ API สาธารณะ แล้วให้คะแนนความเข้ากัน — LinkedIn ไม่ได้อยู่ใน shortlist</small></div>
-              <div class="ai-step"><span class="ord">2 · คัดเรซูเม่</span><strong>คะแนน 3 ด้าน 0–10</strong><small class="muted">Skills / Experience / Culture + จุดแข็ง ธงแดง และคำถามโทรสั้น</small></div>
-              <div class="ai-step"><span class="ord">3 · นัดสัมภาษณ์</span><strong>ชุดคำถามให้ทีม</strong><small class="muted">ยัดลงคำอธิบายนัดในปฏิทิน ไม่ให้ไปถามทั่วไป</small></div>
-            </div>
           </div>
           <div class="panel next-card">
             <h3>นัดถัดไป</h3>
             <div id="home-next" class="muted">ยังไม่มีนัด</div>
           </div>
+            </div>
+            <div data-ptab-panel="flow" class="is-off">
+          <div class="panel ai-lane">
+            <p class="eyebrow">ขั้นตอนสรรหา</p>
+            <h3>จากค้นหาผู้สมัคร จนถึงนัดสัมภาษณ์</h3>
+            <div class="ai-steps">
+              <div class="ai-step"><span class="ord">1 · ค้นหา</span><strong>จัดอันดับจาก JD</strong><small class="muted">ดึงโปรไฟล์สาธารณะแล้วให้คะแนนความเข้ากัน — LinkedIn เป็นลิงก์ให้ HR ถ้ายังไม่เปิดร้านขูด</small></div>
+              <div class="ai-step"><span class="ord">2 · คัดกรอง</span><strong>คะแนน 3 ด้าน 0–10</strong><small class="muted">Skills / Experience / Culture + จุดแข็ง ธงแดง และคำถามโทรสั้น</small></div>
+              <div class="ai-step"><span class="ord">3 · นัดสัมภาษณ์</span><strong>ชุดคำถามให้ทีม</strong><small class="muted">ใส่ในคำอธิบายนัดบนปฏิทิน ไม่ให้ไปถามทั่วไป</small></div>
+            </div>
+          </div>
+            </div>
+          </div>
         </section>
 
         <section data-panel="scout" hidden>
-          <div class="grid scout-desk">
-            <div class="panel">
-              <label>ขั้นแรก · หาใคร</label>
-              <div class="who-row" id="origin-row">
-                <button type="button" data-origin="thai" class="on">คนไทยเท่านั้น</button>
+          <div class="tab-scope search-shell" data-tabs="always">
+            <div class="page-tabs" role="tablist">
+              <button type="button" class="page-tab on" data-ptab="query">ค้นหา</button>
+              <button type="button" class="page-tab" data-ptab="results">ผล <em id="result-tab-count">0</em></button>
+            </div>
+            <div data-ptab-panel="query">
+            <div class="panel search-panel">
+              <div class="search-row">
+                <input id="jd-title" class="search-query" maxlength="160" placeholder="ตำแหน่งที่ต้องการหา" value="Tech Lead / Senior Developer (AI Workflow &amp; Automation)">
+                <button class="btn" id="jd-search" type="button">ค้นหา</button>
               </div>
-              <p class="muted" id="origin-hint">ล็อกคนไทยแล้ว — ชื่อไทย หรือบอกเองว่าเป็นคนไทย ไม่ดึงต่างชาติ</p>
-              <label>ตำแหน่ง</label>
-              <input id="jd-title" maxlength="160" value="Tech Lead / Senior Developer (AI Workflow &amp; Automation)">
-              <label>Job description</label>
-              <textarea id="jd-text" maxlength="12000">H+ Hotel Plus / บริษัท พักดีพลัส จำกัด
+              <details class="jd-fold">
+                <summary>รายละเอียดตำแหน่ง · ใช้เทียบ JD</summary>
+                <textarea id="jd-text" maxlength="12000">H+ Hotel Plus / บริษัท พักดีพลัส จำกัด
 Hybrid Working | เข้าออฟฟิศทุกวันพุธ · Siam Pathumwan House ถนนพญาไท
 จันทร์–ศุกร์ และ 1 เสาร์/เดือน · 09.00–18.00
 
@@ -182,33 +203,45 @@ database, data pipeline, ETL, deploy และถ่ายทอดความ�
 
 Stack: React, TypeScript, Node.js, Express, PostgreSQL, MongoDB, OpenAI, Claude, Gemini, RAG, MCP
 ประสบการณ์ 3–5 ปี และโครงการ AI automation อย่างน้อย 3 โครงการ</textarea>
-              <div class="row">
-                <button class="btn" id="jd-search">ค้นแหล่งสาธารณะ</button>
-              </div>
+              </details>
+              <p class="src-label">แหล่ง</p>
+              <div class="src-picks" id="source-picks"></div>
+              <p class="muted" id="source-hint"></p>
+              <p class="muted" id="source-analysis" hidden></p>
+              <div id="source-lanes" hidden></div>
               <p class="muted" id="scout-meta"></p>
-              <ol class="scout-log" id="scout-log"></ol>
               <details class="source-fold">
-                <summary>แผนที่แหล่ง — ดึงอะไร / ไม่ดึงอะไร</summary>
-                <p class="muted" id="source-analysis">LinkedIn ไม่ดึง — เปิด People Search ให้ HR กดเอง</p>
-                <div class="lanes" id="source-lanes"></div>
+                <summary>ความคืบหน้า</summary>
+                <ol class="scout-log" id="scout-log"></ol>
               </details>
             </div>
+            </div>
+            <div data-ptab-panel="results" class="is-off">
             <div class="panel" id="shortlist-panel">
-              <h3>คนจากแหล่งสาธารณะ</h3>
-              <p class="muted">ทุกคนต้องมีลิงก์โปรไฟล์สาธารณะ — ไม่มีลิงก์ไม่ขึ้นลิสต์ · คนที่เปิดรับงานอยู่บนสุด</p>
-              <div id="shortlist"></div>
-              <div class="row">
-                <button class="btn" id="approve">ส่งที่เลือกเข้าท่อ</button>
-                <button class="btn ghost" id="approve-all" type="button">ส่งทั้งหมดเข้าท่อ</button>
+              <div class="result-head">
+                <h3>ผลค้นหา</h3>
+                <span class="muted" id="result-count">ยังไม่ได้ค้น</span>
               </div>
+              <div class="official-links" id="official-links"></div>
+              <div id="shortlist"></div>
+              <div class="row result-actions">
+                <button class="btn" id="approve">ส่งที่เลือกเป็นผู้สมัคร</button>
+                <button class="btn ghost" id="approve-all" type="button">ส่งทั้งหมดเป็นผู้สมัคร</button>
+              </div>
+            </div>
             </div>
           </div>
         </section>
 
         <section data-panel="screen" hidden>
-          <p class="muted" style="margin:0 0 12px">วางเรซูเม่หรืออัปโหลด PDF แล้ว AI ให้คะแนน 3 ด้านเทียบกับ JD ของตำแหน่งนี้</p>
+          <div class="tab-scope">
+            <div class="page-tabs" role="tablist">
+              <button type="button" class="page-tab on" data-ptab="form">ใส่เรซูเม่</button>
+              <button type="button" class="page-tab" data-ptab="score">ผลคะแนน</button>
+            </div>
+          <p class="muted" style="margin:0 0 12px">วางเรซูเม่หรืออัปโหลด PDF เพื่อคัดกรองเทียบกับ JD ของตำแหน่งนี้</p>
           <div class="grid">
-            <form class="panel" id="screen-form">
+            <form class="panel" id="screen-form" data-ptab-panel="form">
               <label>ตำแหน่ง</label>
               <select id="screen-job" name="jobId" required></select>
               <div class="row">
@@ -224,14 +257,15 @@ Stack: React, TypeScript, Node.js, Express, PostgreSQL, MongoDB, OpenAI, Claude,
               <textarea name="text" maxlength="20000"></textarea>
               <label>หรืออัปโหลด PDF</label>
               <input name="file" type="file" accept="application/pdf">
-              <div class="row"><button class="btn" type="submit">ให้คะแนน</button></div>
+              <div class="row"><button class="btn" type="submit">คัดกรอง Resume</button></div>
             </form>
-            <div class="panel" id="scorecard"><p class="muted">ผลคะแนน Skills / Experience / Culture จะขึ้นที่นี่ พร้อมเหตุผลและคำถามโทรสั้น</p></div>
+            <div class="panel is-off" id="scorecard" data-ptab-panel="score"><p class="muted">ผลคะแนน Skills / Experience / Culture จะขึ้นที่นี่ พร้อมเหตุผลและคำถามโทรสั้น</p></div>
+          </div>
           </div>
         </section>
 
         <section data-panel="board" hidden>
-          <p class="muted" style="margin:0 0 10px">ท่อสมัครทั้งเส้น — ลากการ์ดหรือเลือกขั้น เปิดการ์ดเพื่อแก้ข้อมูลและดูคะแนน AI</p>
+          <p class="muted" style="margin:0 0 10px">ผู้สมัครทั้งเส้น — ลากการ์ดหรือเลือกขั้น เปิดการ์ดเพื่อแก้ข้อมูลและดูผลการคัดกรอง</p>
           <div class="funnel" id="funnel"></div>
           <div class="row">
             <input id="manual-name" placeholder="ชื่อผู้สมัคร" maxlength="160">
@@ -262,7 +296,7 @@ Stack: React, TypeScript, Node.js, Express, PostgreSQL, MongoDB, OpenAI, Claude,
               <input id="edit-phone" maxlength="40">
               <div class="row">
                 <button class="btn ghost" type="submit">บันทึกข้อมูล</button>
-                <button class="btn ghost" type="button" id="person-del">ลบออกจากท่อ</button>
+                <button class="btn ghost" type="button" id="person-del">ลบออกจากรายชื่อ</button>
               </div>
               <p class="muted" id="edit-msg"></p>
             </form>
@@ -282,6 +316,11 @@ Stack: React, TypeScript, Node.js, Express, PostgreSQL, MongoDB, OpenAI, Claude,
         </section>
 
         <section data-panel="schedule" hidden>
+          <div class="tab-scope">
+            <div class="page-tabs" role="tablist">
+              <button type="button" class="page-tab on" data-ptab="grid">ตาราง</button>
+              <button type="button" class="page-tab" data-ptab="book">นัดสัมภาษณ์</button>
+            </div>
           <div class="cal-head">
             <div class="cal-nav">
               <button class="btn ghost" id="cal-prev" type="button">←</button>
@@ -294,11 +333,11 @@ Stack: React, TypeScript, Node.js, Express, PostgreSQL, MongoDB, OpenAI, Claude,
           </div>
           <div class="who-row" id="cal-who"></div>
           <div class="desk-cal">
-            <aside class="mini-month" id="mini-month"></aside>
-            <div class="weekbox">
+            <aside class="mini-month" id="mini-month" data-ptab-panel="grid"></aside>
+            <div class="weekbox" data-ptab-panel="grid">
               <div class="week-grid" id="week-grid"></div>
             </div>
-            <form class="panel book-card" id="book-form">
+            <form class="panel book-card is-off" id="book-form" data-ptab-panel="book">
               <div id="pick-empty" class="pick-empty">
                 <strong>ยังไม่ได้เลือกเวลา</strong>
                 <p class="muted">คลิกช่องว่างทางซ้าย แล้วช่วงนัดจะโชว์ที่นี่</p>
@@ -326,6 +365,7 @@ Stack: React, TypeScript, Node.js, Express, PostgreSQL, MongoDB, OpenAI, Claude,
               <div id="upcoming"></div>
             </form>
           </div>
+          </div>
         </section>
 
         <section data-panel="users" hidden>
@@ -348,8 +388,13 @@ Stack: React, TypeScript, Node.js, Express, PostgreSQL, MongoDB, OpenAI, Claude,
         </section>
 
         <section data-panel="profile" hidden>
+          <div class="tab-scope">
+            <div class="page-tabs" role="tablist">
+              <button type="button" class="page-tab on" data-ptab="account">บัญชี</button>
+              <button type="button" class="page-tab" data-ptab="mcp">MCP</button>
+            </div>
           <div class="grid">
-            <div class="panel">
+            <div class="panel" data-ptab-panel="account">
               <h3>บัญชี</h3>
               <p class="muted" id="profile-who"></p>
               <label>รหัสผ่านใหม่</label>
@@ -367,7 +412,7 @@ Stack: React, TypeScript, Node.js, Express, PostgreSQL, MongoDB, OpenAI, Claude,
               <a class="btn ghost" id="google-me" href="/api/schedule/oauth/start?kind=me" hidden>เชื่อม Gmail ของฉัน</a>
               <p class="muted" id="google-me-status"></p>
             </div>
-            <div class="panel">
+            <div class="panel is-off" data-ptab-panel="mcp">
               <h3>เชื่อม MCP แบบ OAuth</h3>
               <p class="muted">วาง URL นี้เป็น custom connector — ไคลเอนต์จะค้นพบ OAuth แล้วเด้งหน้าเข้าสู่ระบบ Scout Lane ให้เอง ไม่ต้องวาง token</p>
               <div class="row">
@@ -393,11 +438,27 @@ Stack: React, TypeScript, Node.js, Express, PostgreSQL, MongoDB, OpenAI, Claude,
               </table>
             </div>
           </div>
+          </div>
         </section>
 
         <section data-panel="settings" hidden>
-          <div class="panel" data-looks="board" style="margin-bottom:16px"></div>
-          <div class="panel" id="cal-settings" hidden style="margin-bottom:16px">
+          <div class="tab-scope" data-tabs="always">
+            <div class="page-tabs" role="tablist">
+              <button type="button" class="page-tab on" data-ptab="sources">แหล่ง</button>
+              <button type="button" class="page-tab" data-ptab="calendar">ปฏิทิน</button>
+              <button type="button" class="page-tab" data-ptab="prompts">Prompt</button>
+            </div>
+          <div class="panel" id="src-settings" data-ptab-panel="sources" hidden style="margin-bottom:16px">
+            <h3>แหล่งค้นหา Candidate</h3>
+            <p class="muted">แอดมินเลือกโหมดต่อกลุ่ม · ค้นอ่านค่าตอนรัน · คีย์ร้านไม่ออกหน้านี้</p>
+            <div class="src-groups" id="src-groups"></div>
+            <p class="muted" id="src-shop-hint"></p>
+            <div class="row">
+              <button class="btn" id="src-settings-save" type="button">บันทึกแหล่ง</button>
+            </div>
+            <p class="muted" id="src-settings-msg"></p>
+          </div>
+          <div class="panel is-off" id="cal-settings" data-ptab-panel="calendar" hidden style="margin-bottom:16px">
             <h3>ปฏิทินทีม</h3>
             <p class="muted">ค่าเริ่มคือแชร์ปฏิทินให้บัญชีทีม — โหมดอื่นเปิดไว้ถ้าทีมใช้หลาย Gmail</p>
             <label class="radio"><input type="radio" name="cal-mode" value="share" checked> แชร์ปฏิทินให้บัญชีทีม</label>
@@ -411,16 +472,39 @@ Stack: React, TypeScript, Node.js, Express, PostgreSQL, MongoDB, OpenAI, Claude,
             </div>
             <p class="muted" id="cal-settings-msg"></p>
           </div>
-          <div id="admin-prompts" hidden>
-            <h3>Prompt ของเลน</h3>
+          <div id="admin-prompts" class="is-off" data-ptab-panel="prompts" hidden>
+            <h3>Prompt ของระบบ</h3>
             <p class="muted">เก็บในระบบ ไม่ได้อยู่ใน repo — แก้แล้วใช้รอบถัดไปทันที</p>
             <div id="prompt-list"></div>
+          </div>
           </div>
         </section>
       </main>
     </div>
   </div>
-  <script src="/theme.js?v=mira2"></script>
-  <script src="/app.js?v=mira3"></script>
+  <script src="/theme.js?v=mira5"></script>
+  <nav class="dock" aria-label="เมนูหลัก">
+    <button type="button" data-dock="home" class="on">
+      <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg></span>
+      ภาพรวม
+    </button>
+    <button type="button" data-dock="scout">
+      <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></span>
+      ค้นหา
+    </button>
+    <button type="button" data-dock="screen">
+      <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg></span>
+      คัดกรอง
+    </button>
+    <button type="button" data-dock="board">
+      <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M8 7v10"/><path d="M16 7v4"/></svg></span>
+      ผู้สมัคร
+    </button>
+    <button type="button" data-dock="schedule">
+      <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg></span>
+      สัมภาษณ์
+    </button>
+  </nav>
+  <script src="/app.js?v=mira9"></script>
 </body>
 </html>

@@ -12,7 +12,7 @@ packages/core   password hashing, users, PATs
 
 หนึ่ง Worker ถือ UI + API. D1 เก็บงาน คน นัด. KV เก็บเซสชันและรีเฟรชโทเค็นปฏิทิน. R2 เก็บ PDF. Queue อ่านเรซูเม่ยาว. Durable Object ล็อกช่วงเวลาเพื่อกันนัดซ้อน — นี่คือแหล่งความจริงเรื่องชน แม้ Google ล้ม.
 
-ค้นคน: API สาธารณะที่ถูกกฎหมาย (GitHub, Hugging Face, npm, GitLab) + ลิงก์ค้นทางการ (LinkedIn, JobsDB, JobThai, …). ร้านขูด (Apify) เป็นช่องสำรองเมื่อมี `APIFY_TOKEN` และดึงได้เฉพาะโฮสต์สาธารณะในรายการอนุญาต — ไม่ดึง LinkedIn / Facebook / บอร์ดสมัคร. HR อนุมัติก่อนเข้าท่อ.
+ค้นคน: API สาธารณะที่ถูกกฎหมาย (GitHub, Hugging Face, npm, GitLab, DevHub, HN, …) + ลิงก์ค้นทางการ (JobsDB People, JobThai, …). ร้านขูด (Apify) เป็นช่องสำรองเมื่อมี `APIFY_TOKEN` — ค้นเว็บเปิด (รวม Kaggle / Speaker Deck / Codeberg) และถ้าแอดมินเปิดโหมดร้านขูด LinkedIn จะใช้ตัวค้นโปรไฟล์ที่อนุญาตเท่านั้น ไม่ใช้คุกกี้. ค่าเริ่ม LinkedIn ยังเป็นลิงก์ให้ HR. ไม่ดึง Facebook / บอร์ดสมัคร. แอดมินตั้งโหมดแหล่งได้ที่ Settings → แหล่งค้นคน. HR อนุมัติก่อนเข้าท่อ.
 
 AI วิ่งผ่าน Cloudflare AI Gateway (`scoutlane-ai-gateway`). บันไดโมเดล: `glm-5.2` → `glm-4.7-flashx` → `glm-4.7-flash` (ฟรี จบที่นี่ ไม่ลง Workers AI). คีย์ไม่ขึ้นเบราว์เซอร์. ข้อความจากเรซูเม่ถูกตัดวลีสั่งโมเดลก่อนส่ง.
 
@@ -53,7 +53,7 @@ Two roles: `admin` and `member`. Permissions live in `packages/core/src/rbac.ts`
 | | admin | member |
 |---|---|---|
 | Jobs, scout, screen, pipeline, interviews, own MCP token | yes | yes |
-| Users, AI prompts | yes | no |
+| Users, AI prompts, โหมดแหล่งค้น | yes | no |
 
 Members who mint a PAT get member tools only. Admin tools are not registered for a member session.
 

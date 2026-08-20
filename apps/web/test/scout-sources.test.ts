@@ -57,9 +57,10 @@ describe("DevHub public pages", () => {
 });
 
 describe("shortlist sources", () => {
-  it("lets DevHub people onto the shortlist and still blocks LinkedIn ids", () => {
+  it("lets DevHub people onto the shortlist and still blocks Facebook ids", () => {
     expect(CANDIDATE_SOURCES.has("devhub")).toBe(true);
-    expect(CANDIDATE_SOURCES.has("linkedin")).toBe(false);
+    expect(CANDIDATE_SOURCES.has("linkedin")).toBe(true);
+    expect(CANDIDATE_SOURCES.has("facebook")).toBe(false);
     const hit = {
       source: "devhub" as const,
       externalId: "devhub:webdevbyboom",

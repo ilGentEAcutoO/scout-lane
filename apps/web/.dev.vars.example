@@ -33,7 +33,7 @@ MCP_PUBLIC_URL=http://127.0.0.1:8790
 GITHUB_TOKEN=
 
 # ──────────────────────────────────────────
-# Apify  (optional — public-host search only; LinkedIn stays official links)
+# Apify  (optional — public-host search; LinkedIn shop is an admin setting)
 # get from: https://console.apify.com/settings/integrations
 # APIFY_WIDE=1 adds Sessionize/Hashnode hosts (phase A)
 # ──────────────────────────────────────────

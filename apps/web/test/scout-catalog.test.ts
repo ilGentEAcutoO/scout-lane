@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { buildSourceLanes, laneHas, sourceLabel } from "../src/modules/scout/catalog";
+import { analysisFor, buildSourceLanes, laneHas, sourceLabel } from "../src/modules/scout/catalog";
 import { officialSearchUrls } from "../src/modules/scout/links";
+import { DEFAULT_MODES } from "../src/modules/scout/modes";
 
 const adapters = [
   { id: "github", status: "live" as const },
@@ -48,6 +49,26 @@ describe("source lanes", () => {
   it("explains that LinkedIn is not fetched", () => {
     expect(analysis.headline).toMatch(/LinkedIn ไม่ดึง/);
     expect(sourceLabel("linkedin")).toBe("LinkedIn People");
+  });
+
+  it("moves LinkedIn to live when shop mode marks the adapter live", () => {
+    const shop = buildSourceLanes({
+      adapters: [{ id: "linkedin", status: "live" }],
+      modes: { ...DEFAULT_MODES, linkedin: "shop" },
+    });
+    expect(laneHas(shop.lanes, "linkedin")).toBe("live");
+    expect(shop.analysis.headline).toMatch(/ร้านขูด/);
+    expect(analysisFor({ ...DEFAULT_MODES, linkedin: "shop" }).headline).toMatch(/ไม่ใช้คุกกี้/);
+  });
+
+  it("puts LinkedIn on the HR-click lane when mode is link", () => {
+    const linked = buildSourceLanes({
+      adapters,
+      links: officialSearchUrls("Tech Lead MCP Bangkok"),
+      modes: DEFAULT_MODES,
+    });
+    expect(laneHas(linked.lanes, "linkedin")).toBe("hr_click");
+    expect(linked.lanes.live.some((row) => row.id === "linkedin")).toBe(false);
   });
 
   it("puts official people-search landings in hr_click", () => {

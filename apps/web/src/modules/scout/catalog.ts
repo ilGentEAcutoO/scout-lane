@@ -1,4 +1,5 @@
 import type { OfficialLink } from "./links";
+import { groupFor, type SourceGroupId, type SourceMode } from "./modes";
 import type { SourceStatus } from "./types";
 
 export type LaneId = "live" | "hr_click" | "blocked";
@@ -24,6 +25,23 @@ export const SOURCE_ANALYSIS = {
   headline: "LinkedIn ไม่ดึง — เปิด People Search ให้ HR กดเอง · ร้านขูดใช้ได้แค่เว็บเปิด",
   body: "ไม่มี People Search API สาธารณะ และข้อตกลงของ LinkedIn/Facebook ห้ามดึงโปรไฟล์. JobsDB People / JobThai ค้นประวัติ / JobBKK Resume / Hosco / JobTOPGUN / SEEK Talent เป็นลิงก์ทางการให้ HR เปิดเอง ไม่ดึงเข้าเอนจิน. ใบงาน JobsDB JobThai JobBKK เป็นบอร์ดสมัครเข้า ไม่ดึงรายชื่อจากประกาศ. ช่องฟรีแลนซ์ (Fastwork, Behance, Dribbble) ไม่ใช่เป้าหมาย HR. ที่ดึงคือ GitHub, HN SEEKING WORK, Dev.to, DevHub (โปรไฟล์เปิด), GitLab, Stack Exchange และร้านขูดเฉพาะโฮสต์สาธารณะเมื่อมีคีย์.",
 };
+
+export function analysisFor(modes?: Record<SourceGroupId, SourceMode>): typeof SOURCE_ANALYSIS {
+  const li = modes?.linkedin ?? "link";
+  if (li === "shop") {
+    return {
+      headline: "LinkedIn ดึงผ่านร้านขูดเมื่อมีคีย์ · ไม่ใช้คุกกี้ · แหล่งไทยดึงเอง",
+      body: "โหมดร้านขูด LinkedIn ใช้ตัวค้นโปรไฟล์ในรายการอนุญาตเท่านั้น ไม่รับคุกกี้และไม่รับชื่อตัวขูดจากเบราว์เซอร์. แหล่งไทย (GitHub, DevHub, ชุมชนเปิด) ดึงด้วย API สาธารณะ. ร้านค้นเว็บเปิดครอบคลุม GitHub / HF / GitLab / DEV / DevHub / Kaggle / Speaker Deck / Codeberg. Facebook และบอร์ดสมัครยังไม่ดึง.",
+    };
+  }
+  if (li === "off") {
+    return {
+      headline: "LinkedIn ปิด · แหล่งไทยดึงเอง",
+      body: SOURCE_ANALYSIS.body,
+    };
+  }
+  return SOURCE_ANALYSIS;
+}
 
 type Meta = { label: string; family: string; why: string };
 
@@ -65,12 +83,12 @@ const META: Record<string, Meta> = {
   apify_web: {
     label: "ร้านค้นสาธารณะ",
     family: "community",
-    why: "ร้านขูดที่อนุญาตเฉพาะเว็บเปิด (GitHub, HF, GitLab, DEV, DevHub) — ไม่ดึง LinkedIn / Facebook / บอร์ดสมัคร",
+    why: "ร้านขูดที่อนุญาตเฉพาะเว็บเปิด (GitHub, HF, GitLab, DEV, DevHub, Kaggle, Speaker Deck, Codeberg) — ไม่ดึง Facebook / บอร์ดสมัคร",
   },
   linkedin: {
     label: "LinkedIn People",
     family: "people",
-    why: "ไม่มี People Search API สาธารณะ และข้อตกลงห้ามดึงโปรไฟล์ — เปิดหน้าค้นให้ HR",
+    why: "ค่าเริ่มเปิดหน้าค้นให้ HR · โหมดร้านขูดใช้ตัวค้นโปรไฟล์ที่อนุญาต ไม่ใช้คุกกี้",
   },
   jobsdb_people: {
     label: "JobsDB People",
@@ -126,7 +144,8 @@ const META: Record<string, Meta> = {
   medium: { label: "Medium", family: "community", why: "หน้าค้นทางการ ไม่ดึงโปรไฟล์ลับ" },
   langchainhub: { label: "LangChain Hub", family: "code", why: "หน้าค้น prompt สาธารณะ" },
   mcpgithub: { label: "Awesome MCP", family: "code", why: "หน้าค้นรีโป GitHub ทางการ" },
-  kaggle: { label: "Kaggle", family: "research", why: "หน้าค้นทางการ ไม่ดึงโปรไฟล์ผ่าน API ของเรา" },
+  kaggle: { label: "Kaggle", family: "research", why: "หน้าค้นทางการ — โปรไฟล์เปิดมาทางร้านขูดเว็บ" },
+  speakerdeck: { label: "Speaker Deck", family: "events", why: "สไลด์สปีกเกอร์สาธารณะ — โปรไฟล์เปิดมาทางร้านขูดเว็บ" },
   paperswithcode: { label: "Papers with Code", family: "research", why: "หน้าค้นทางการ — author API ใช้ไม่ได้" },
 };
 
@@ -159,10 +178,23 @@ function card(
   return row;
 }
 
+function laneOf(
+  adapter: { id: string; status: SourceStatus },
+  modes?: Record<SourceGroupId, SourceMode>,
+): LaneId {
+  if (adapter.status === "live") return "live";
+  if (modes) {
+    const group = groupFor(adapter.id);
+    if (group && modes[group] === "link") return "hr_click";
+  }
+  return "blocked";
+}
+
 export function buildSourceLanes(input: {
   adapters: Array<{ id: string; status: SourceStatus }>;
   links?: OfficialLink[];
   counts?: Record<string, number>;
+  modes?: Record<SourceGroupId, SourceMode>;
 }): { lanes: SourceLanes; analysis: typeof SOURCE_ANALYSIS } {
   const links = input.links ?? [];
   const urlById = new Map(links.map((item) => [item.id, item.url]));
@@ -173,14 +205,10 @@ export function buildSourceLanes(input: {
 
   for (const adapter of input.adapters) {
     seen.add(adapter.id);
-    const next = card(
-      adapter.id,
-      adapter.status === "live" ? "live" : "blocked",
-      adapter.status,
-      urlById.get(adapter.id),
-      input.counts?.[adapter.id],
-    );
-    if (adapter.status === "live") live.push(next);
+    const lane = laneOf(adapter, input.modes);
+    const next = card(adapter.id, lane, adapter.status, urlById.get(adapter.id), input.counts?.[adapter.id]);
+    if (lane === "live") live.push(next);
+    else if (lane === "hr_click") hrClick.push(next);
     else blocked.push(next);
   }
 
@@ -192,7 +220,7 @@ export function buildSourceLanes(input: {
 
   return {
     lanes: { live, hr_click: hrClick, blocked },
-    analysis: SOURCE_ANALYSIS,
+    analysis: analysisFor(input.modes),
   };
 }
 

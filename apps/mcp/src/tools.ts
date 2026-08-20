@@ -69,7 +69,9 @@ import {
   jobthaiAdapter,
   linkedinAdapter,
 } from "../../web/src/modules/scout/policy";
-import { apifyWebAdapter, withVendorStatus } from "../../web/src/modules/scout/apify";
+import { apifyWebAdapter } from "../../web/src/modules/scout/apify";
+import { CANDIDATE_SOURCES } from "../../web/src/modules/scout/engine";
+import { readyAdapters } from "../../web/src/modules/scout/modes";
 import { getPrompt } from "../../web/src/llm/settings";
 import { SEED_ROLE } from "../../web/src/modules/jobs";
 import { slotsOverlap } from "../../web/src/do/overlap";
@@ -89,8 +91,8 @@ const liveAdapters = [
 ];
 const policyAdapters = [linkedinAdapter, facebookAdapter, jobsdbAdapter, jobthaiAdapter, jobbkkAdapter];
 
-function mcpAdapters(env: Env) {
-  return withVendorStatus([...liveAdapters, ...policyAdapters], env);
+function mcpAdapterList() {
+  return [...liveAdapters, ...policyAdapters];
 }
 
 export function buildServer(env: Env, user: AccessPrincipal, request: Request): McpServer {
@@ -603,10 +605,10 @@ export function buildServer(env: Env, user: AccessPrincipal, request: Request): 
   );
 
   add("list_scout_sources", "scout.run", { description: "Legal scout sources split into live, HR-click, and blocked", inputSchema: {} }, async () => {
-    const adapters = mcpAdapters(env);
+    const { ready, modes } = await readyAdapters(env, mcpAdapterList());
     return {
-      ...buildSourceLanes({ adapters, links: officialSearchUrls("Tech Lead AI Workflow") }),
-      sources: adapters.map((a) => ({ id: a.id, status: a.status, label: sourceLabel(a.id) })),
+      ...buildSourceLanes({ adapters: ready, links: officialSearchUrls("Tech Lead AI Workflow"), modes }),
+      sources: ready.map((a) => ({ id: a.id, status: a.status, label: sourceLabel(a.id) })),
     };
   });
 
@@ -636,8 +638,9 @@ export function buildServer(env: Env, user: AccessPrincipal, request: Request): 
         { role: "user", content: jd },
       ]);
       const query = planned.query || "TypeScript MCP location:Bangkok";
-      const ready = withVendorStatus(liveAdapters, env);
-      const batches = await Promise.all(ready.map((a) => a.search(query, lane).catch(() => [])));
+      const { ready, modes } = await readyAdapters(env, mcpAdapterList());
+      const live = ready.filter((a) => a.status === "live" && CANDIDATE_SOURCES.has(a.id));
+      const batches = await Promise.all(live.map((a) => a.search(query, lane).catch(() => [])));
       const hits = batches
         .flat()
         .filter((hit) => hitThai(hit))
@@ -684,14 +687,13 @@ export function buildServer(env: Env, user: AccessPrincipal, request: Request): 
           ...hit,
         });
       }
-      const adapters = mcpAdapters(env);
       return {
         jobId,
         query,
         shortlist,
         links: officialSearchUrls(query),
-        ...buildSourceLanes({ adapters, links: officialSearchUrls(query) }),
-        sources: adapters.map((a) => ({ id: a.id, status: a.status, label: sourceLabel(a.id) })),
+        ...buildSourceLanes({ adapters: ready, links: officialSearchUrls(query), modes }),
+        sources: ready.map((a) => ({ id: a.id, status: a.status, label: sourceLabel(a.id) })),
       };
     },
     true,

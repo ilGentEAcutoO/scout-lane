@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { can, jobSchema, LIMITS, parseBody, ValidationError } from "@scout-lane/core";
+import { can, jobSchema, LIMITS, parseBody, sourceModesSchema, ValidationError } from "@scout-lane/core";
 
 describe("rbac", () => {
   it("blocks members from user and prompt writes", () => {
@@ -24,6 +24,19 @@ describe("shared schemas", () => {
     expect(() => parseBody(jobSchema, { title: "Tech Lead", description: "short" })).toThrow(
       ValidationError,
     );
+  });
+});
+
+describe("source modes schema", () => {
+  it("strips actor names, cookies, and tokens from the client payload", () => {
+    const parsed = sourceModesSchema.parse({
+      modes: { linkedin: "shop" },
+      actorId: "curious_coder/linkedin-profile-scraper",
+      cookie: "li_at=secret",
+      token: "apify_api_xxx",
+    });
+    expect(parsed).toEqual({ modes: { linkedin: "shop" } });
+    expect(JSON.stringify(parsed)).not.toMatch(/cookie|actorId|apify_api/i);
   });
 });
 

@@ -65,6 +65,13 @@ export const calendarSettingsSchema = z.object({
   shareEmails: z.string().max(4000).optional().or(z.literal("")),
 });
 
+export const SOURCE_GROUPS = ["thai_code", "community", "apify_web", "linkedin", "job_boards"] as const;
+export const SOURCE_MODES = ["self", "shop", "link", "off"] as const;
+
+export const sourceModesSchema = z.object({
+  modes: z.partialRecord(z.enum(SOURCE_GROUPS), z.enum(SOURCE_MODES)),
+});
+
 export const tokenNameSchema = z.object({
   name: z.string().trim().min(LIMITS.tokenNameMin).max(LIMITS.tokenNameMax).default("mcp"),
 });
@@ -81,6 +88,7 @@ export const scoutSearchSchema = z.object({
   title: z.string().trim().min(LIMITS.jobTitleMin).max(LIMITS.jobTitleMax).optional(),
   jd: z.string().trim().min(LIMITS.jdMin).max(LIMITS.jdMax),
   origin: z.enum(SCOUT_ORIGINS).default("thai"),
+  modes: z.partialRecord(z.enum(SOURCE_GROUPS), z.enum(SOURCE_MODES)).optional(),
 });
 
 export const approveSchema = z.object({

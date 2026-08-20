@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { approveSchema, parseBody, scoutSearchSchema } from "@scout-lane/core";
+import { approveSchema, can, parseBody, scoutSearchSchema } from "@scout-lane/core";
 import { requireActor, requirePerm } from "../security/actor";
 import { readJson } from "../security/body";
 import { HttpError } from "../http/errors";
@@ -40,9 +40,18 @@ import {
   jobthaiAdapter,
   linkedinAdapter,
 } from "./scout/policy";
-import { apifyWebAdapter, withVendorStatus } from "./scout/apify";
+import { apifyWebAdapter } from "./scout/apify";
 import { buildSourceLanes, sourceLabel } from "./scout/catalog";
 import { CANDIDATE_SOURCES } from "./scout/engine";
+import {
+  GROUP_HINTS,
+  GROUP_SHORT,
+  SOURCE_GROUPS,
+  normalizeModes,
+  readyAdapters,
+  readyFromModes,
+  saveSourceModes,
+} from "./scout/modes";
 import {
   classifyHit,
   heuristicScore,
@@ -156,13 +165,23 @@ scout.get("/api/scout/latest", async (c) => {
 scout.get("/api/scout/sources", async (c) => {
   const actor = await requireActor(c.req.raw, c.env);
   requirePerm(actor, "scout.run");
-  const ready = withVendorStatus(adapters, c.env);
+  const { ready, modes, hasToken } = await readyAdapters(c.env, adapters);
   const map = buildSourceLanes({
     adapters: ready,
     links: officialSearchUrls("Tech Lead AI Workflow"),
+    modes,
   });
   return c.json({
     ...map,
+    modes,
+    hasShopKey: hasToken,
+    groups: SOURCE_GROUPS.map((id) => ({
+      id,
+      label: GROUP_SHORT[id],
+      hint: GROUP_HINTS[id],
+      on: modes[id] !== "off",
+      fetch: modes[id] === "self" || (modes[id] === "shop" && hasToken),
+    })),
     sources: ready.map((a) => ({ id: a.id, status: a.status, label: sourceLabel(a.id) })),
   });
 });
@@ -204,16 +223,24 @@ scout.post("/api/scout/search", async (c) => {
     say({ state: "ok", message: `โมเดลลิมิต — ใช้คำค้นสำรอง: ${query}` });
   }
 
-  const ready = withVendorStatus(adapters, c.env);
+  const stored = await readyAdapters(c.env, adapters);
+  const modes = body.modes ? normalizeModes(body.modes) : stored.modes;
+  if (body.modes && can(actor.role, "settings.write")) {
+    await saveSourceModes(c.env, modes);
+  }
+  const { ready, hasToken } = readyFromModes(c.env, adapters, modes);
   const live = ready.filter((a) => a.status === "live" && CANDIDATE_SOURCES.has(a.id));
-  const preview = buildSourceLanes({ adapters: ready, links: officialSearchUrls(query) });
+  const preview = buildSourceLanes({ adapters: ready, links: officialSearchUrls(query), modes });
   say({
     state: "skip",
     message: `ไม่ดึง ${preview.lanes.blocked.map((row) => row.label).join(" · ")} — ไม่มี API สาธารณะ / กำแพงล็อกอิน`,
   });
+  const liShop = modes.linkedin === "shop" && hasToken;
   say({
     state: "ok",
-    message: `จะดึงสด ${preview.lanes.live.length} แหล่งสาธารณะ — LinkedIn ไม่ได้อยู่ในนี้`,
+    message: liShop
+      ? `จะดึงสด ${preview.lanes.live.length} แหล่ง รวม LinkedIn ร้านขูด (ไม่ใช้คุกกี้)`
+      : `จะดึงสด ${preview.lanes.live.length} แหล่งสาธารณะ — LinkedIn ไม่ได้อยู่ในนี้`,
   });
 
   const batches = await Promise.all(
@@ -309,7 +336,7 @@ scout.post("/api/scout/search", async (c) => {
   live.forEach((adapter, index) => {
     counts[adapter.id] = batches[index]?.length ?? 0;
   });
-  const map = buildSourceLanes({ adapters: ready, links: officialSearchUrls(query), counts });
+  const map = buildSourceLanes({ adapters: ready, links: officialSearchUrls(query), counts, modes });
   return c.json({
     jobId,
     runId,

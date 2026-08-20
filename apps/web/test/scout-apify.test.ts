@@ -10,12 +10,13 @@ import {
 } from "../src/modules/scout/apify";
 
 describe("apify actor allowlist", () => {
-  it("allows only the public Google search actor", () => {
+  it("allows the public Google search actor and HarvestAPI LinkedIn search", () => {
     expect(assertActorAllowed("apify/google-search-scraper")).toBe("apify~google-search-scraper");
     expect(assertActorAllowed("apify~google-search-scraper")).toBe("apify~google-search-scraper");
+    expect(assertActorAllowed("harvestapi/linkedin-profile-search")).toBe("harvestapi~linkedin-profile-search");
   });
 
-  it("rejects walled-garden and unknown actors", () => {
+  it("rejects cookie-based LinkedIn, Facebook, and unknown actors", () => {
     expect(() => assertActorAllowed("curious_coder/linkedin-profile-scraper")).toThrow(/actor_not_allowed/);
     expect(() => assertActorAllowed("apify/facebook-posts-scraper")).toThrow(/actor_not_allowed/);
     expect(() => assertActorAllowed("clockworks/tiktok-scraper")).toThrow(/actor_not_allowed/);
@@ -54,6 +55,21 @@ describe("public search hits", () => {
               url: "https://devhub.in.th/en/developers/webdevbyboom/",
               description: "Open to Work Thailand",
             },
+            {
+              title: "somkiat · Kaggle",
+              url: "https://www.kaggle.com/somkiat",
+              description: "Bangkok notebooks",
+            },
+            {
+              title: "Kaggle competitions",
+              url: "https://www.kaggle.com/competitions/titanic",
+              description: "contest",
+            },
+            {
+              title: "Boom · Speaker Deck",
+              url: "https://speakerdeck.com/webdevbyboom",
+              description: "MCP talk Bangkok",
+            },
           ],
         },
       ],
@@ -62,6 +78,8 @@ describe("public search hits", () => {
     expect(hits.map((hit) => hit.profileUrl)).toEqual([
       "https://github.com/dtinth",
       "https://devhub.in.th/en/developers/webdevbyboom/",
+      "https://www.kaggle.com/somkiat",
+      "https://speakerdeck.com/webdevbyboom",
     ]);
     expect(hits.every((hit) => hit.source === "apify_web")).toBe(true);
     expect(hits[0]?.displayName).toMatch(/dtinth/i);
@@ -93,6 +111,9 @@ describe("public search hits", () => {
     const q = publicSearchQueries("Tech Lead MCP Bangkok", "C").join("\n");
     expect(q).toMatch(/site:github\.com/);
     expect(q).toMatch(/site:devhub\.in\.th/);
+    expect(q).toMatch(/site:kaggle\.com/);
+    expect(q).toMatch(/site:speakerdeck\.com/);
+    expect(q).toMatch(/site:codeberg\.org/);
     expect(q).not.toMatch(/site:linkedin/);
     expect(q).not.toMatch(/site:facebook/);
   });

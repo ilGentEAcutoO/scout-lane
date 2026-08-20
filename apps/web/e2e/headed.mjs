@@ -90,27 +90,25 @@ await step("S03", "admin enters workspace", async () => {
 });
 
 await step("S04", "scout shows H+ JD", async () => {
-  await page.locator("nav button[data-tab=scout]").click();
+  await page.locator("aside nav button[data-tab=scout]").click();
   const jd = await page.locator("#jd-text").inputValue();
   if (!jd.includes("Hotel Plus") && !jd.includes("Tech Lead")) throw new Error("missing H+ JD");
-  await page.locator("#source-lanes .lane-blocked").waitFor({ timeout: 20000 });
-  const map = await page.locator("#source-lanes").innerText();
-  if (!map.includes("LinkedIn")) throw new Error("source map missing LinkedIn");
-  if (!map.includes("ไม่ดึง")) throw new Error("source map missing blocked lane");
-  const headline = await page.locator("#source-analysis").innerText();
-  if (!headline.includes("LinkedIn ไม่ดึง")) throw new Error("analysis headline missing");
+  await page.locator("#source-picks").waitFor({ timeout: 20000 });
+  const picks = await page.locator("#source-picks").innerText();
+  if (!picks.includes("LinkedIn")) throw new Error("source picks missing LinkedIn");
+  if (!picks.includes("GitHub")) throw new Error("source picks missing GitHub");
   await shot("04-scout");
 });
 
 await step("S05", "pipeline filters exist", async () => {
-  await page.locator("nav button[data-tab=board]").click();
+  await page.locator("aside nav button[data-tab=board]").click();
   await page.locator("#filter-stage").waitFor();
   await page.locator("#board").waitFor();
   await shot("05-board");
 });
 
 await step("S06", "week calendar grid", async () => {
-  await page.locator("nav button[data-tab=schedule]").click();
+  await page.locator("aside nav button[data-tab=schedule]").click();
   await page.locator("#week-grid").waitFor();
   const cells = await page.locator("#week-grid .c").count();
   if (cells < 20) throw new Error(`expected hour cells, got ${cells}`);
@@ -118,7 +116,7 @@ await step("S06", "week calendar grid", async () => {
 });
 
 await step("S07", "profile password and MCP connector", async () => {
-  await page.locator("nav button[data-tab=profile]").click();
+  await page.locator("aside nav button[data-tab=profile]").click();
   await page.locator("#me-password").waitFor();
   await page.locator("#mcp-url").waitFor();
   const mcp = (await page.locator("#mcp-url").innerText()).trim();

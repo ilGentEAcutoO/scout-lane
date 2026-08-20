@@ -15,6 +15,7 @@ secrets.json
 .idea/
 .vscode/
 agent-temp/
+.playwright-mcp/
 apps/agent-temp/
 instruction/work/
 videos/**/node_modules/

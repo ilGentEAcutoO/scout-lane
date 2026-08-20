@@ -11,6 +11,7 @@ export const CANDIDATE_SOURCES = new Set<SourceId>([
   "hn",
   "gitlab",
   "apify_web",
+  "linkedin",
 ]);
 
 export function stripHtml(raw: string): string {

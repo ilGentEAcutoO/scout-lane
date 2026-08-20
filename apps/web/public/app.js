@@ -21,6 +21,9 @@ const state = {
   origin: "thai",
   lanes: null,
   analysis: null,
+  sourceModes: null,
+  hasShopKey: false,
+  sourceGroups: [],
   candidates: [],
   boardView: "board",
   busy: [],
@@ -45,13 +48,13 @@ function startOfDay(d) {
 }
 
 const TITLES = {
-  home: ["ภาพรวม", "เลนวันนี้"],
-  scout: ["AI", "ค้นคนจาก JD"],
-  screen: ["AI", "คัดเรซูเม่"],
-  board: ["ติดตาม", "Pipeline"],
-  schedule: ["นัดหมาย", "ปฏิทิน"],
+  home: ["ภาพรวม", "ภาพรวม"],
+  scout: ["สรรหา", "ค้นหา Candidate"],
+  screen: ["สรรหา", "คัดกรอง Resume"],
+  board: ["ติดตาม", "ผู้สมัคร"],
+  schedule: ["การสัมภาษณ์", "การสัมภาษณ์"],
   users: ["ระบบ", "ผู้ใช้"],
-  settings: ["ระบบ", "Settings"],
+  settings: ["ระบบ", "ตั้งค่า"],
   profile: ["ระบบ", "โปรไฟล์"],
 };
 
@@ -172,6 +175,12 @@ async function boot() {
     location.href = "/";
   };
   $("#jd-search").onclick = runScout;
+  $("#jd-title")?.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      runScout();
+    }
+  });
   $("#origin-row")?.addEventListener("click", (e) => {
     const btn = e.target.closest("[data-origin]");
     if (!btn) return;
@@ -190,6 +199,7 @@ async function boot() {
   $("#me-password-save").onclick = changeMyPassword;
   $("#me-cal-save")?.addEventListener("click", saveMyCalendar);
   $("#cal-settings-save")?.addEventListener("click", saveCalendarSettings);
+  $("#src-settings-save")?.addEventListener("click", saveSourceSettings);
   $("#top-avatar")?.addEventListener("click", () => showTab("profile"));
   $("#who-mark")?.addEventListener("click", () => showTab("profile"));
   $("#user-add").onclick = addUser;
@@ -222,7 +232,7 @@ async function boot() {
   $("#step-prev").onclick = () => shiftStep(-1);
   $("#step-next").onclick = () => shiftStep(1);
   const loads = [loadJobs(), loadBoard(), loadInterviews()];
-  if (can("settings.read")) loads.push(loadPrompts(), loadCalendarSettings());
+  if (can("settings.read")) loads.push(loadPrompts(), loadCalendarSettings(), loadSourceSettings());
   if (can("users.read")) loads.push(loadUsers());
   await Promise.all(loads);
   renderHome();
@@ -247,6 +257,13 @@ function applyCaps() {
   if (prompts) prompts.hidden = !can("settings.read");
   const calSet = $("#cal-settings");
   if (calSet) calSet.hidden = !can("settings.read");
+  const srcSet = $("#src-settings");
+  if (srcSet) srcSet.hidden = !can("settings.read");
+  const srcSave = $("#src-settings-save");
+  if (srcSave) srcSave.hidden = !can("settings.write");
+  document.querySelectorAll("[data-panel=settings] [data-ptab]").forEach((btn) => {
+    btn.hidden = !can("settings.read");
+  });
 }
 
 function applyLimits(L) {
@@ -274,17 +291,60 @@ function applyLimits(L) {
   }
 }
 
+function setNavOpen(open) {
+  const shell = document.querySelector(".shell");
+  const btn = $("#menu-toggle");
+  if (shell) shell.classList.toggle("nav-open", open);
+  if (btn) {
+    btn.setAttribute("aria-expanded", open ? "true" : "false");
+    btn.setAttribute("aria-label", open ? "ปิดเมนู" : "เปิดเมนู");
+  }
+}
+
 function bindNav() {
-  document.querySelectorAll("nav [data-tab]").forEach((btn) => {
+  document.querySelectorAll("aside nav [data-tab]").forEach((btn) => {
     btn.onclick = () => showTab(btn.dataset.tab);
+  });
+  document.querySelectorAll("[data-dock]").forEach((btn) => {
+    btn.onclick = () => showTab(btn.dataset.dock);
+  });
+  document.querySelectorAll(".page-tabs").forEach((bar) => {
+    bar.addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-ptab]");
+      if (!btn || !bar.contains(btn)) return;
+      showPageTab(bar, btn.dataset.ptab);
+    });
+  });
+  $("#menu-toggle")?.addEventListener("click", () => {
+    setNavOpen(!document.querySelector(".shell")?.classList.contains("nav-open"));
+  });
+  $("#nav-veil")?.addEventListener("click", () => setNavOpen(false));
+  addEventListener("keydown", (e) => {
+    if (e.key === "Escape") setNavOpen(false);
   });
 }
 
+function showPageTab(bar, id) {
+  const scope = bar.closest(".tab-scope") || bar.closest("[data-panel]") || document;
+  bar.querySelectorAll("[data-ptab]").forEach((b) => b.classList.toggle("on", b.dataset.ptab === id));
+  scope.querySelectorAll("[data-ptab-panel]").forEach((p) => {
+    p.classList.toggle("is-off", p.dataset.ptabPanel !== id);
+  });
+}
+
+function openPageTab(panel, id) {
+  const section = document.querySelector(`[data-panel="${panel}"]`);
+  const bar = section?.querySelector(".page-tabs");
+  if (bar) showPageTab(bar, id);
+}
+
 function showTab(tab) {
-  const btn = document.querySelector(`nav [data-tab="${tab}"]`);
+  const btn = document.querySelector(`aside nav [data-tab="${tab}"]`);
   if (!btn || btn.hidden) return;
   if (tab === "users" && !can("users.read")) return;
-  document.querySelectorAll("nav [data-tab]").forEach((b) => b.classList.toggle("on", b === btn));
+  document.querySelectorAll("aside nav [data-tab]").forEach((b) => b.classList.toggle("on", b === btn));
+  document.querySelectorAll("[data-dock]").forEach((b) => b.classList.toggle("on", b.dataset.dock === tab));
+  setNavOpen(false);
   document.querySelectorAll("[data-panel]").forEach((p) => {
     const on = p.dataset.panel === tab;
     p.hidden = !on;
@@ -304,7 +364,9 @@ function showTab(tab) {
   if (tab === "board") loadBoard().catch(() => {});
   if (tab === "schedule") loadInterviews().catch(() => {});
   if (tab === "profile") Promise.all([loadTokens(), loadScheduleMeta()]).catch(() => {});
-  if (tab === "settings" && can("settings.read")) loadCalendarSettings().catch(() => {});
+  if (tab === "settings" && can("settings.read")) {
+    Promise.all([loadCalendarSettings(), loadSourceSettings()]).catch(() => {});
+  }
 }
 
 function renderHome() {
@@ -350,14 +412,82 @@ async function addJob() {
   }
 }
 
+const SOURCE_ON = {
+  thai_code: "self",
+  community: "self",
+  apify_web: "shop",
+  linkedin: "link",
+  job_boards: "link",
+};
+
+function onModeFor(id) {
+  if (id === "linkedin" && state.hasShopKey) return "shop";
+  return SOURCE_ON[id] || "self";
+}
+
 async function loadSourceLanes() {
-  if (!state.lanes) {
-    const data = await api("/api/scout/sources");
-    state.lanes = data.lanes;
-    state.analysis = data.analysis;
-  }
-  paintSourceMap(state.lanes, state.analysis);
+  const data = await api("/api/scout/sources");
+  state.lanes = data.lanes;
+  state.analysis = data.analysis;
+  state.sourceModes = data.modes || state.sourceModes;
+  state.hasShopKey = Boolean(data.hasShopKey);
+  state.sourceGroups = data.groups || [];
+  paintSourcePicks();
+  paintOfficialLinks(data.lanes);
   if (!state.shortlist.length) await loadLatestShortlist();
+}
+
+function paintSourcePicks() {
+  const root = $("#source-picks");
+  if (!root) return;
+  const groups = state.sourceGroups.length
+    ? state.sourceGroups
+    : Object.keys(SOURCE_ON).map((id) => ({ id, label: id, hint: "", on: false, fetch: false }));
+  root.innerHTML = groups
+    .map((group) => {
+      const on = (state.sourceModes?.[group.id] || "off") !== "off";
+      const fetch = on && (state.sourceModes[group.id] === "self" || (state.sourceModes[group.id] === "shop" && state.hasShopKey));
+      const kind = fetch ? "ดึง" : on ? "ลิงก์" : "";
+      return `<button type="button" class="src-pick${on ? " on" : ""}${on && !fetch ? " linkish" : ""}" data-src="${esc(group.id)}" title="${esc(group.hint || "")}">${esc(group.label)}${kind ? `<em>${kind}</em>` : ""}</button>`;
+    })
+    .join("");
+  root.onclick = (e) => {
+    const btn = e.target.closest("[data-src]");
+    if (!btn) return;
+    const id = btn.dataset.src;
+    const cur = state.sourceModes?.[id] || "off";
+    state.sourceModes = { ...(state.sourceModes || {}), [id]: cur === "off" ? onModeFor(id) : "off" };
+    paintSourcePicks();
+    paintSourceHint();
+  };
+  paintSourceHint();
+}
+
+function paintSourceHint() {
+  const hint = $("#source-hint");
+  const note = $("#source-analysis");
+  const modes = state.sourceModes || {};
+  const on = Object.entries(modes).filter(([, mode]) => mode !== "off");
+  const fetch = on.filter(([, mode]) => mode === "self" || (mode === "shop" && state.hasShopKey));
+  const links = on.filter(([id, mode]) => mode === "link" || (mode === "shop" && !state.hasShopKey));
+  const text = !on.length
+    ? "เลือกอย่างน้อยหนึ่งแหล่งก่อนค้น"
+    : `เปิด ${on.length} แหล่ง · ดึง ${fetch.length} · ลิงก์ให้เปิด ${links.length}${state.hasShopKey ? "" : " · ยังไม่มีคีย์ร้านขูด"}`;
+  if (hint) hint.textContent = text;
+  if (note) note.textContent = state.analysis?.headline || text;
+}
+
+function paintOfficialLinks(lanes) {
+  const root = $("#official-links");
+  if (!root) return;
+  const people = [...(lanes?.hr_click || [])].filter((card) => card.url && (card.family === "people" || card.id === "linkedin"));
+  root.innerHTML = people
+    .slice(0, 6)
+    .map(
+      (card) =>
+        `<a class="src-chip hr_click" href="${esc(card.url)}" target="_blank" rel="noopener">${esc(card.label)}</a>`,
+    )
+    .join("");
 }
 
 async function loadLatestShortlist() {
@@ -366,54 +496,14 @@ async function loadLatestShortlist() {
     state.shortlist = data.shortlist || [];
     state.jobId = data.jobId || state.jobId;
     if (data.shortlist?.length) {
-      $("#scout-meta").textContent = `รอบล่าสุด · ${data.shortlist.length} คนที่จ้างได้${data.title ? ` · ${data.title}` : ""}`;
+      $("#scout-meta").textContent = `รอบล่าสุด · ${data.shortlist.length} คน${data.title ? ` · ${data.title}` : ""}`;
+      if ($("#result-count")) $("#result-count").textContent = `${data.shortlist.length} คน`;
+      if ($("#result-tab-count")) $("#result-tab-count").textContent = String(data.shortlist.length);
     }
     paintShortlist(data.shortlist);
   } catch {
     paintShortlist([]);
   }
-}
-
-function paintSourceMap(lanes, analysis) {
-  const note = $("#source-analysis");
-  if (note && analysis) note.textContent = analysis.headline;
-  const root = $("#source-lanes");
-  if (!root || !lanes) return;
-  const all = [...(lanes.live || []), ...(lanes.hr_click || []), ...(lanes.blocked || [])];
-  const people = all.filter((card) => card.family === "people" && card.url);
-  const cols = [
-    ["live", "ดึงสด", "API สาธารณะ — คนขึ้น shortlist"],
-    ["hr_click", "เปิดลิงก์ให้ HR", "ไม่มี API โปรไฟล์ที่เราใช้ได้"],
-    ["blocked", "ไม่ดึง", "กำแพงล็อกอิน / ข้อตกลง / บอร์ดงาน"],
-  ];
-  const peopleRow = people.length
-    ? `<div class="lane-col lane-people">
-        <p class="eyebrow">ค้นคนให้ HR <b>${people.length}</b></p>
-        <p class="muted">People Search ทางการ — กดเปิดเอง ไม่ดึงเข้าท่อ</p>
-        <div class="src-links">${people.map(sourceChip).join("")}</div>
-      </div>`
-    : "";
-  root.innerHTML =
-    peopleRow +
-    cols
-      .map(([key, title, hint]) => {
-        const items = lanes[key] || [];
-        return `<div class="lane-col lane-${key}">
-        <p class="eyebrow">${title} <b>${items.length}</b></p>
-        <p class="muted">${hint}</p>
-        <div class="src-links">${items.map(sourceChip).join("")}</div>
-      </div>`;
-      })
-      .join("");
-}
-
-function sourceChip(card) {
-  const count = typeof card.count === "number" ? `<em>${card.count}</em>` : "";
-  const body = `${esc(card.label)}${count}`;
-  if (card.url) {
-    return `<a class="src-chip ${esc(card.lane)}" href="${esc(card.url)}" target="_blank" rel="noopener" title="${esc(card.why)}">${body}</a>`;
-  }
-  return `<span class="src-chip ${esc(card.lane)}" title="${esc(card.why)}">${body}</span>`;
 }
 
 function sourceName(id) {
@@ -422,10 +512,16 @@ function sourceName(id) {
 }
 
 async function runScout() {
+  const modes = state.sourceModes || {};
+  if (!Object.values(modes).some((mode) => mode && mode !== "off")) {
+    if ($("#scout-meta")) $("#scout-meta").textContent = "เลือกอย่างน้อยหนึ่งแหล่งก่อนค้น";
+    return;
+  }
   state.scoutLog = [];
   paintScoutLog();
-  $("#scout-meta").textContent = "ดึงแหล่งสาธารณะ — LinkedIn เป็นลิงก์ให้เปิด · ร้านขูดเฉพาะเว็บเปิด…";
+  $("#scout-meta").textContent = "กำลังค้นหา…";
   $("#shortlist").innerHTML = "";
+  if ($("#result-count")) $("#result-count").textContent = "กำลังค้น";
   try {
     const data = await api("/api/scout/search", {
       method: "POST",
@@ -433,20 +529,23 @@ async function runScout() {
         title: $("#jd-title").value,
         jd: $("#jd-text").value,
         origin: "thai",
+        modes,
       }),
     });
     state.shortlist = data.shortlist;
     state.jobId = data.jobId;
     state.lanes = data.lanes;
     state.analysis = data.analysis;
-    const via = data.rankedBy === "model" ? "AI ให้คะแนน" : "คะแนนจากกฎตำแหน่ง";
-    const who = "คนไทย";
-    $("#scout-meta").textContent = `หา${who} · คำค้น: ${data.query} · ${data.shortlist.length} คนที่จ้างได้ · ${via}`;
-    paintSourceMap(data.lanes, data.analysis);
+    const via = data.rankedBy === "model" ? "จัดอันดับจาก JD" : "คะแนนจากกฎตำแหน่ง";
+    $("#scout-meta").textContent = `คำค้น: ${data.query} · ${data.shortlist.length} คน · ${via}`;
+    if ($("#result-count")) $("#result-count").textContent = `${data.shortlist.length} คน`;
+    if ($("#result-tab-count")) $("#result-tab-count").textContent = String(data.shortlist.length);
+    paintOfficialLinks(data.lanes);
     paintShortlist(data.shortlist);
-    $("#shortlist-panel")?.scrollIntoView({ block: "start", behavior: motionOk() ? "smooth" : "auto" });
+    openPageTab("scout", "results");
   } catch (err) {
-    $("#scout-meta").textContent = err.message || "scout_failed";
+    $("#scout-meta").textContent = err.message || "ค้นไม่สำเร็จ";
+    if ($("#result-count")) $("#result-count").textContent = "ค้นไม่สำเร็จ";
   }
   await loadJobs().catch(() => {});
 }
@@ -456,21 +555,27 @@ function paintShortlist(hits) {
     .map((hit) => {
       const score = typeof hit.fitScore === "number" ? hit.fitScore : null;
       const pick = score === null || score >= 5;
-      return `<label class="hit">
+      return `<label class="hit-card">
           <input type="checkbox" value="${hit.id}" ${pick ? "checked" : ""}>
-          <strong>${esc(hit.displayName)}</strong>
-          <span class="pill">${score ?? "–"} · ${esc(sourceName(hit.source))}</span>
-          <div class="muted">${esc(hit.headline || "")}</div>
-          <div>${esc(hit.reason || "")}</div>
-          ${
-            hit.profileUrl
-              ? `<a href="${esc(hit.profileUrl)}" target="_blank" rel="noopener">โปรไฟล์</a>`
-              : `<span class="muted">ไม่มีลิงก์โปรไฟล์ — ไม่ส่งเข้าท่อ</span>`
-          }
-          ${hit.portfolioUrl ? `<a href="${esc(hit.portfolioUrl)}" target="_blank" rel="noopener">พอร์ตส่วนตัว</a>` : ""}
+          <div>
+            <div class="hit-top">
+              <strong>${esc(hit.displayName)}</strong>
+              <span class="pill">${score ?? "–"} · ${esc(sourceName(hit.source))}</span>
+            </div>
+            <p class="muted">${esc(hit.headline || "")}</p>
+            ${hit.reason ? `<p class="hit-why">${esc(hit.reason)}</p>` : ""}
+            <div class="hit-links">
+              ${
+                hit.profileUrl
+                  ? `<a href="${esc(hit.profileUrl)}" target="_blank" rel="noopener">โปรไฟล์</a>`
+                  : `<span class="muted">ไม่มีลิงก์โปรไฟล์</span>`
+              }
+              ${hit.portfolioUrl ? `<a href="${esc(hit.portfolioUrl)}" target="_blank" rel="noopener">พอร์ตส่วนตัว</a>` : ""}
+            </div>
+          </div>
         </label>`;
     })
-    .join("") || `<p class="muted">ยังไม่มีโปรไฟล์คนจากแหล่งสด</p>`;
+    .join("") || `<p class="muted">ยังไม่มีผลค้นหา — กดค้นหาด้านบน</p>`;
 }
 
 const SCOUT_STATE = {
@@ -515,7 +620,7 @@ async function approveSelected() {
   if (!ids.length) return;
   await api("/api/scout/approve", { method: "POST", body: JSON.stringify({ ids }) });
   await loadBoard();
-  $("#scout-meta").textContent = `ส่งเข้าท่อแล้ว ${ids.length} คน`;
+  $("#scout-meta").textContent = `ส่งเป็นผู้สมัครแล้ว ${ids.length} คน`;
   showTab("board");
 }
 
@@ -529,7 +634,8 @@ async function approveAllHits() {
 async function runScreen(event) {
   event.preventDefault();
   const box = $("#scorecard");
-  box.innerHTML = "<p class='muted'>กำลังให้ GLM อ่านเรซูเม่…</p>";
+  box.innerHTML = "<p class='muted'>กำลังอ่านเรซูเม่…</p>";
+  openPageTab("screen", "score");
   const form = new FormData(event.target);
   const data = await api("/api/screen", { method: "POST", body: form });
   if (data.status === "queued") {
@@ -539,6 +645,7 @@ async function runScreen(event) {
     if (now.application.status === "ready") {
       state.screenWait.delete(data.applicationId);
       renderScore(now.application);
+      openPageTab("screen", "score");
       await loadBoard();
       return;
     }
@@ -547,6 +654,7 @@ async function runScreen(event) {
   }
   const detail = await api(`/api/screen/${data.applicationId}`);
   renderScore(detail.application);
+  openPageTab("screen", "score");
   await loadBoard();
 }
 
@@ -592,6 +700,7 @@ async function handleLive(ev) {
     if (document.querySelector("[data-panel=screen]:not([hidden])")) {
       const detail = await api(`/api/screen/${ev.applicationId}`);
       renderScore(detail.application);
+      openPageTab("screen", "score");
     }
     await loadBoard();
     renderHome();
@@ -601,7 +710,7 @@ async function handleLive(ev) {
     const wait = state.screenWait.get(ev.applicationId);
     if (wait) {
       state.screenWait.delete(ev.applicationId);
-      $("#scorecard").innerHTML = "<p>คัดเรซูเม่ไม่สำเร็จ จะลองใหม่อัตโนมัติจากคิว</p>";
+      $("#scorecard").innerHTML = "<p>คัดกรอง Resume ไม่สำเร็จ จะลองใหม่อัตโนมัติจากคิว</p>";
       wait();
     }
     return;
@@ -659,7 +768,7 @@ function setBoardView(view) {
 
 function renderScore(app) {
   $("#scorecard").innerHTML = `
-    <p class="eyebrow">AI Resume Screener</p>
+    <p class="eyebrow">ผลการคัดกรอง Resume</p>
     <h3>${esc(app.display_name)} · ${esc(app.job_title)}</h3>
     <div class="score-row"><span>Skills</span><div class="bar"><i style="width:${barPct(app.skills_score)}%"></i></div><b>${num(app.skills_score)}</b></div>
     <p class="muted">${esc(app.skills_why || "")}</p>
@@ -752,7 +861,7 @@ async function loadBoard() {
           (c) => `<article class="chip" draggable="true" data-id="${c.id}">
             <strong>${esc(c.display_name)}</strong>
             <div class="muted">${esc(c.source || "—")}${c.job_title ? ` · ${esc(c.job_title)}` : ""}</div>
-            ${c.screen_status === "ready" ? `<div class="mini-score">${scoreMini(c)}</div>` : `<div class="muted">ยังไม่คัดเรซูเม่</div>`}
+            ${c.screen_status === "ready" ? `<div class="mini-score">${scoreMini(c)}</div>` : `<div class="muted">ยังไม่คัดกรอง Resume</div>`}
             <select class="stage-dd" data-id="${c.id}">${data.stages
               .map((s) => `<option value="${s}"${s === c.stage ? " selected" : ""}>${STAGE_TH[s] || s}</option>`)
               .join("")}</select>
@@ -830,7 +939,7 @@ async function savePerson(event) {
 }
 
 async function deletePerson() {
-  if (!state.person || !confirm("ลบคนนี้ออกจากท่อ?")) return;
+  if (!state.person || !confirm("ลบคนนี้ออกจากรายชื่อ?")) return;
   await api(`/api/candidates/${state.person.candidate.id}`, { method: "DELETE" });
   closeDrawer();
   await loadBoard();
@@ -1216,6 +1325,58 @@ async function saveMyCalendar() {
   }
 }
 
+async function loadSourceSettings() {
+  const box = $("#src-settings");
+  if (!box || box.hidden) return;
+  const data = await api("/api/settings/sources");
+  const labels = data.modeLabels || { self: "ดึงเอง", shop: "ร้านขูด", link: "เปิดลิงก์ให้ HR", off: "ปิด" };
+  const root = $("#src-groups");
+  if (root) {
+    root.innerHTML = (data.groups || [])
+      .map((group) => {
+        const radios = (group.allowed || [])
+          .map(
+            (mode) =>
+              `<label class="radio"><input type="radio" name="src-${esc(group.id)}" value="${esc(mode)}"${
+                mode === group.mode ? " checked" : ""
+              }> ${esc(labels[mode] || mode)}</label>`,
+          )
+          .join("");
+        return `<div class="src-group">
+          <p class="src-title">${esc(group.label)}</p>
+          <p class="muted">${esc(group.hint)}</p>
+          ${radios}
+        </div>`;
+      })
+      .join("");
+  }
+  const hint = $("#src-shop-hint");
+  if (hint) {
+    hint.textContent = data.hasShopKey
+      ? "คีย์ร้านพร้อม — โหมดร้านขูดใช้ได้"
+      : "ยังไม่มีคีย์ร้าน — โหมดร้านขูดจะรอคีย์ (ไม่ดึง)";
+  }
+}
+
+async function saveSourceSettings() {
+  const msg = $("#src-settings-msg");
+  if (msg) msg.textContent = "";
+  const modes = {};
+  document.querySelectorAll("#src-groups .src-group").forEach((group) => {
+    const picked = group.querySelector("input[type=radio]:checked");
+    if (!picked) return;
+    const id = picked.name.replace(/^src-/, "");
+    modes[id] = picked.value;
+  });
+  try {
+    await api("/api/settings/sources", { method: "PUT", body: JSON.stringify({ modes }) });
+    if (msg) msg.textContent = "บันทึกแล้ว";
+    state.lanes = null;
+  } catch (err) {
+    if (msg) msg.textContent = err.message;
+  }
+}
+
 async function loadCalendarSettings() {
   const box = $("#cal-settings");
   if (!box || box.hidden) return;
@@ -1345,9 +1506,9 @@ const STAGE_TH = {
 };
 
 const KIND_TH = {
-  entered: "เข้าเลน",
+  entered: "เข้าเป็นผู้สมัคร",
   moved: "ย้ายขั้น",
-  screened: "คัดเรซูเม่",
+  screened: "คัดกรอง Resume",
   booked: "จองนัด",
   cancelled: "ยกเลิกนัด",
 };
@@ -1355,7 +1516,7 @@ const KIND_TH = {
 const PATH = ["applied", "screening", "prescreen", "interview", "offer", "hired"];
 
 const STEP_HELP = {
-  applied: "เพิ่งเข้าเลน จากค้นคนหรือเพิ่มมือ ยังไม่ได้อ่านเรซูเม่",
+  applied: "เพิ่งเข้าเป็นผู้สมัคร จากค้นหา Candidate หรือเพิ่มมือ ยังไม่ได้อ่านเรซูเม่",
   screening: "อ่านเรซูเม่ให้คะแนน Skills / Experience / Culture",
   prescreen: "คุยสั้นก่อนนัดยาว — คัดคำถามและธงแดง",
   interview: "จองบนปฏิทิน ชนนัดไม่ได้",
@@ -1480,7 +1641,7 @@ function renderStepper() {
     action = `<div class="row"><button class="btn" type="button" id="step-go">ขยับมาขั้นนี้</button></div>`;
   }
   if (can("candidates.write") && view === "interview") {
-    action += `<div class="row"><button class="btn ghost" type="button" id="step-cal">เปิดปฏิทินจองนัด</button></div>`;
+    action += `<div class="row"><button class="btn ghost" type="button" id="step-cal">ไปนัดสัมภาษณ์</button></div>`;
   }
   if (can("candidates.write") && here === p.cursor && c.stage !== "rejected" && c.stage !== "hired") {
     action += `<div class="row"><button class="btn ghost" type="button" id="step-reject">ไม่ผ่าน</button></div>`;
