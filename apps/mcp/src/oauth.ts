@@ -135,6 +135,12 @@ export async function handleOAuth(request: Request, env: Env): Promise<Response 
   }
 
   if (url.pathname === "/authorize" && request.method === "GET") {
+    const app = String(env.APP_PUBLIC_URL ?? "").replace(/\/$/, "");
+    if (app) {
+      const next = new URL("/oauth/authorize", app);
+      next.search = url.search;
+      return new Response(null, { status: 302, headers: cors({ location: next.toString(), "cache-control": "no-store" }) });
+    }
     return authorizePage(url);
   }
 
@@ -176,25 +182,26 @@ function authorizePage(url: URL, error = ""): Response {
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="color-scheme" content="light only">
-<title>เข้าสู่ระบบ · Scout Lane MCP</title>
+<title>เข้าสู่ระบบ · Scout Lane</title>
 <style>
   html{color-scheme:light only}
-  body{margin:0;min-height:100vh;display:grid;place-items:center;background:#F4F4F5;font-family:Sarabun,Segoe UI,sans-serif;color:#18181B}
-  form{width:min(380px,92vw);background:#fff;border:1px solid #E4E4E7;border-radius:16px;padding:28px 24px;box-shadow:0 12px 40px -20px rgba(0,0,0,.2)}
+  body{margin:0;min-height:100vh;display:grid;place-items:center;background:#f6f4ff;font-family:Sarabun,Segoe UI,sans-serif;color:#1a1638}
+  form{width:min(380px,92vw);background:#fff;border:1px solid #e4def6;border-radius:16px;padding:28px 24px;box-shadow:0 14px 36px -18px #6e5ae633}
   .brand{display:flex;gap:10px;align-items:center;margin-bottom:18px}
-  .mark{width:36px;height:36px;border-radius:10px;background:#18181B;color:#fff;display:grid;place-items:center;font-weight:700}
+  .mark{width:36px;height:36px;border-radius:10px;background:#6e5ae6;color:#fff;display:grid;place-items:center;font-weight:700}
   h1{font-size:20px;margin:0}
-  p{color:#71717A;font-size:14px;margin:4px 0 16px}
-  .err{background:#FEF2F2;color:#991B1B;border-radius:10px;padding:8px 10px;font-size:13px;margin:0 0 12px}
+  small{color:#6a6490;font-size:13px}
+  p{color:#6a6490;font-size:14px;margin:4px 0 16px}
+  .err{background:#fff1f2;color:#e11d48;border-radius:10px;padding:8px 10px;font-size:13px;margin:0 0 12px}
   label{display:block;font-size:13px;margin:10px 0 4px}
-  input{width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid #E4E4E7;border-radius:10px;font:inherit}
-  button{width:100%;margin-top:16px;padding:12px;border:0;border-radius:999px;background:#18181B;color:#fff;font:inherit;font-weight:600;cursor:pointer}
+  input{width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid #ddd6f5;border-radius:10px;font:inherit}
+  button{width:100%;margin-top:16px;padding:12px;border:0;border-radius:999px;background:#6e5ae6;color:#fff;font:inherit;font-weight:600;cursor:pointer}
 </style>
 </head>
 <body>
 <form method="post" action="/authorize">
-  <div class="brand"><div class="mark">S</div><div><h1>Scout Lane</h1></div></div>
-  <p>คอนเนกเตอร์ขอเข้าพื้นที่ทำงาน — เข้าสู่ระบบเพื่ออนุญาต</p>
+  <div class="brand"><div class="mark">S</div><div><h1>Scout Lane</h1><small>อนุญาตคอนเนกเตอร์ MCP</small></div></div>
+  <p>ใช้บัญชี Scout Lane ชุดเดียวกับหน้าเว็บ เพื่ออนุญาตให้เครื่องมือภายนอกทำงานในระบบนี้</p>
   ${error ? `<p class="err" role="alert">${esc(error)}</p>` : ""}
   <input type="hidden" name="client_id" value="${esc(q.get("client_id") ?? "")}">
   <input type="hidden" name="redirect_uri" value="${esc(q.get("redirect_uri") ?? "")}">
@@ -250,6 +257,30 @@ async function completeAuthorize(request: Request, env: Env): Promise<Response> 
   const user = await verifyUser(env.DB_MAIN, username, password);
   if (!user) return authorizePage(replay, "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูก");
 
+  return finishAuthorize(env, replay, {
+    id: user.id,
+    username: user.username,
+    role: user.role,
+  });
+}
+
+export async function finishAuthorize(
+  env: Env,
+  url: URL,
+  user: { id: string; username: string; role: string },
+): Promise<Response> {
+  const clientId = url.searchParams.get("client_id") ?? "";
+  const redirectUri = url.searchParams.get("redirect_uri") ?? "";
+  const state = url.searchParams.get("state") ?? "";
+  const challenge = url.searchParams.get("code_challenge") ?? "";
+  const method = url.searchParams.get("code_challenge_method") ?? "S256";
+  if (method !== "S256" || !challenge) return authorizePage(url, "ต้องใช้ PKCE S256");
+  const clientRaw = await env.KV_SESSIONS.get(`oauth:client:${clientId}`);
+  if (!clientRaw) return authorizePage(url, "ไม่รู้จักคอนเนกเตอร์นี้");
+  const client = JSON.parse(clientRaw) as { redirects: string[] };
+  if (!client.redirects.includes(redirectUri)) return authorizePage(url, "redirect ไม่ตรงที่ลงทะเบียน");
+  if (!allowedRedirect(redirectUri)) return authorizePage(url, "redirect ไม่ได้รับอนุญาต");
+
   const code = crypto.randomUUID();
   await env.KV_SESSIONS.put(
     `oauth:code:${code}`,
@@ -266,8 +297,9 @@ async function completeAuthorize(request: Request, env: Env): Promise<Response> 
   const next = new URL(redirectUri);
   next.searchParams.set("code", code);
   if (state) next.searchParams.set("state", state);
-  next.searchParams.set("iss", issuer(new URL(request.url)));
-  return new Response(null, { status: 302, headers: cors({ location: next.toString() }) });
+  const iss = String(env.MCP_PUBLIC_URL ?? "").replace(/\/$/, "") || issuer(url);
+  next.searchParams.set("iss", iss);
+  return new Response(null, { status: 302, headers: cors({ location: next.toString(), "cache-control": "no-store" }) });
 }
 
 async function issueToken(request: Request, env: Env): Promise<Response> {

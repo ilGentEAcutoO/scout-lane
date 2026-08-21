@@ -5,7 +5,10 @@ import {
   A_PUBLIC_HOSTS,
   C_PUBLIC_HOSTS,
   assertActorAllowed,
+  hitsFromLinkedinSearch,
   hitsFromPublicSearch,
+  linkedinPeopleQuery,
+  linkedinProfileUrl,
   publicSearchQueries,
 } from "../src/modules/scout/apify";
 
@@ -119,10 +122,76 @@ describe("public search hits", () => {
   });
 });
 
+describe("linkedin people query", () => {
+  it("turns a JD / GitHub-style query into a HarvestAPI people phrase", () => {
+    expect(linkedinPeopleQuery("การตลาด Brand Content location:Bangkok")).toBe("Content Marketing");
+    expect(linkedinPeopleQuery("การตลาด Brand location:Bangkok")).toBe("Brand Manager");
+    expect(linkedinPeopleQuery("Performance Marketing จ่ายสื่อ location:Thailand")).toBe("Performance Marketing");
+    expect(linkedinPeopleQuery("Social Media Manager โซเชียล กรุงเทพ")).toBe("Social Media Manager");
+    expect(linkedinPeopleQuery("หาทีมการตลาด กรุงเทพ")).toBe("Marketing Manager");
+    expect(linkedinPeopleQuery("AI TypeScript location:Bangkok")).toBe("TypeScript");
+    expect(linkedinPeopleQuery("Tech Lead MCP RAG location:Thailand")).toBe("Tech Lead");
+  });
+
+  it("builds /in/ URLs from publicIdentifier and http links", () => {
+    expect(linkedinProfileUrl({ publicIdentifier: "nicha-brand" })).toBe("https://www.linkedin.com/in/nicha-brand");
+    expect(linkedinProfileUrl({ linkedinUrl: "http://linkedin.com/in/jane" })).toBe("https://www.linkedin.com/in/jane");
+    expect(linkedinProfileUrl({ url: "https://facebook.com/x" })).toBeNull();
+  });
+
+  it("keeps Short-mode rows that only have publicIdentifier and a current role", () => {
+    const hits = hitsFromLinkedinSearch([
+      {
+        publicIdentifier: "nicha-brand",
+        firstName: "Nicha",
+        lastName: "Brand",
+        currentPosition: { position: "Marketing Manager", companyName: "Grab" },
+        location: { linkedinText: "Bangkok, Thailand" },
+        openToWork: true,
+      },
+      { firstName: "Nope", url: "https://facebook.com/x" },
+    ]);
+    expect(hits).toHaveLength(1);
+    expect(hits[0]?.profileUrl).toBe("https://www.linkedin.com/in/nicha-brand");
+    expect(hits[0]?.headline).toMatch(/Marketing Manager at Grab/);
+    expect(hits[0]?.headline).toMatch(/Open to Work/);
+    expect(hits[0]?.location).toMatch(/Bangkok/);
+  });
+
+  it("keeps Thai or English names in Thailand and drops CJK / off-country cards", () => {
+    const hits = hitsFromLinkedinSearch([
+      {
+        publicIdentifier: "nicha-brand",
+        firstName: "Nicha",
+        lastName: "Srisuk",
+        location: { linkedinText: "Bangkok, Thailand", countryCode: "TH" },
+      },
+      {
+        publicIdentifier: "liu-wei",
+        fullName: "淑婷 刘",
+        location: { linkedinText: "Bangkok, Thailand", countryCode: "TH" },
+      },
+      {
+        publicIdentifier: "wei-shanghai",
+        firstName: "Wei",
+        lastName: "Zhang",
+        location: { linkedinText: "Shanghai, China", countryCode: "CN" },
+      },
+      {
+        publicIdentifier: "jane-th",
+        firstName: "Jane",
+        lastName: "Miller",
+        location: { linkedinText: "Chiang Mai, Thailand", countryCode: "TH" },
+      },
+    ]);
+    expect(hits.map((row) => row.displayName)).toEqual(["Nicha Srisuk", "Jane Miller"]);
+  });
+});
+
 describe("apify source lane", () => {
   it("is a shortlist source and labelled as a vendor lane", () => {
     expect(CANDIDATE_SOURCES.has("apify_web")).toBe(true);
-    expect(sourceLabel("apify_web")).toBe("ร้านค้นสาธารณะ");
+    expect(sourceLabel("apify_web")).toBe("ค้นสาธารณะ");
   });
 
   it("stays blocked without a token and live when marked live", () => {

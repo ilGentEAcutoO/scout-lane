@@ -1,6 +1,10 @@
 # Scout Lane
 
-พื้นที่ทำงานสรรหาสำหรับตำแหน่งจริง **Tech Lead / Senior Developer (AI Workflow & Automation)** ที่ H+ Hotel Plus — หาคนจาก JD, คัดเรซูเม่, เลื่อนท่อ, นัดสัมภาษณ์ในตารางสัปดาห์
+[![License: PolyForm Noncommercial](https://img.shields.io/badge/license-PolyForm%20Noncommercial-4A6B5C)](LICENSE)
+
+พื้นที่ทำงานสรรหา — หาคนจาก JD, คัดเรซูเม่, เลื่อนท่อ, นัดสัมภาษณ์ในตารางสัปดาห์
+
+เปิดซอร์สให้ดูและศึกษาได้ภายใต้ [PolyForm Noncommercial 1.0.0](LICENSE). **ห้ามใช้ในธุรกิจ** — บริษัท เอเจนซี งานลูกค้า หรือท่อสรรหาในองค์กร ต้อง[ติดต่อเจ้าของแล้วจ่าย](LICENSE-COMMERCIAL.md) ไม่ว่าจะได้กำไรจากตัวซอฟต์แวร์หรือไม่. ไม่ใช้ MIT / Apache / AGPL เพราะสามอันนั้นอนุญาตใช้ในบริษัทฟรี.
 
 ```text
 apps/web     HR UI + API   (port 8787)
@@ -12,7 +16,7 @@ packages/core   password hashing, users, PATs
 
 หนึ่ง Worker ถือ UI + API. D1 เก็บงาน คน นัด. KV เก็บเซสชันและรีเฟรชโทเค็นปฏิทิน. R2 เก็บ PDF. Queue อ่านเรซูเม่ยาว. Durable Object ล็อกช่วงเวลาเพื่อกันนัดซ้อน — นี่คือแหล่งความจริงเรื่องชน แม้ Google ล้ม.
 
-ค้นคน: API สาธารณะที่ถูกกฎหมาย (GitHub, Hugging Face, npm, GitLab, DevHub, HN, …) + ลิงก์ค้นทางการ (JobsDB People, JobThai, …). ร้านขูด (Apify) เป็นช่องสำรองเมื่อมี `APIFY_TOKEN` — ค้นเว็บเปิด (รวม Kaggle / Speaker Deck / Codeberg) และถ้าแอดมินเปิดโหมดร้านขูด LinkedIn จะใช้ตัวค้นโปรไฟล์ที่อนุญาตเท่านั้น ไม่ใช้คุกกี้. ค่าเริ่ม LinkedIn ยังเป็นลิงก์ให้ HR. ไม่ดึง Facebook / บอร์ดสมัคร. แอดมินตั้งโหมดแหล่งได้ที่ Settings → แหล่งค้นคน. HR อนุมัติก่อนเข้าท่อ.
+ค้นคน: API สาธารณะที่ถูกกฎหมาย (GitHub, Hugging Face, npm, GitLab, DevHub, HN, …) + ลิงก์ค้นทางการ (JobsDB People, JobThai, …). ผู้ให้บริการค้นข้อมูล (Apify) เป็นช่องสำรองเมื่อมี `APIFY_TOKEN` — ค้นเว็บสาธารณะ (รวม Kaggle / Speaker Deck / Codeberg) และ LinkedIn ดึงผ่านตัวค้นโปรไฟล์ที่อนุญาตเท่านั้น ไม่ดึงเอง ไม่ใช้คุกกี้ ไม่เปิดลิงก์ให้ HR. ไม่ดึง Facebook / บอร์ดสมัคร. แอดมินตั้งโหมดแหล่งได้ที่ Settings → แหล่งค้นคน. HR อนุมัติก่อนเข้าท่อ.
 
 AI วิ่งผ่าน Cloudflare AI Gateway (`scoutlane-ai-gateway`). บันไดโมเดล: `glm-5.2` → `glm-4.7-flashx` → `glm-4.7-flash` (ฟรี จบที่นี่ ไม่ลง Workers AI). คีย์ไม่ขึ้นเบราว์เซอร์. ข้อความจากเรซูเม่ถูกตัดวลีสั่งโมเดลก่อนส่ง.
 
@@ -65,7 +69,8 @@ Field limits live in `packages/core/src/limits.ts`. The UI uses them for `maxlen
 
 ```bash
 cp apps/web/.dev.vars.example apps/web/.dev.vars
-# set SESSION_SECRET, BOOTSTRAP_USERNAME, BOOTSTRAP_PASSWORD, GLM_API_KEY
+# set SESSION_SECRET, BOOTSTRAP_USERNAME, BOOTSTRAP_PASSWORD
+# LLM keys: Settings → โมเดล (not env)
 cp apps/web/.dev.vars apps/mcp/.dev.vars
 npm install
 npm run migrate:local
@@ -78,14 +83,12 @@ Web: http://127.0.0.1:8787
 MCP: http://127.0.0.1:8790/mcp
 
 Live (separate Workers):
-- App: https://scoutlane-worker-app.sornkan.workers.dev
-- MCP: https://scoutlane-worker-mcp.sornkan.workers.dev/mcp
+- App: https://scout-lane.sornkan.workers.dev
+- MCP: https://scout-lane-mcp.sornkan.workers.dev/mcp
 
 ## Demo
 
-Walkthrough (~3 min) of all four modules: [`demo/scout-lane.mp4`](demo/scout-lane.mp4)
-
-Custom connector (Claude / Grok / ChatGPT / Gemini): ใส่ `https://scoutlane-worker-mcp.sornkan.workers.dev/mcp` — ไคลเอนต์อ่าน OAuth metadata แล้วเปิดหน้าเข้าสู่ระบบของ Scout Lane อัตโนมัติ (authorization code + PKCE). โปรไฟล์ใน UI ใช้สร้าง/เพิกถอน PAT ได้ถ้าเครื่องมือยังไม่รองรับ OAuth.
+Custom connector (Claude / Grok / ChatGPT / Gemini): ใส่ `https://scout-lane-mcp.sornkan.workers.dev/mcp` — ไคลเอนต์อ่าน OAuth metadata แล้วเปิดหน้าเข้าสู่ระบบของ Scout Lane (`scout-lane.sornkan.workers.dev`) อัตโนมัติ (authorization code + PKCE). โปรไฟล์ใน UI ใช้สร้าง/เพิกถอน PAT ได้ถ้าเครื่องมือยังไม่รองรับ OAuth.
 
 Cowork / Claude example:
 
@@ -103,3 +106,18 @@ Cowork / Claude example:
 ## Secrets
 
 Never commit `.env` or `.dev.vars`. Prompts live in D1 settings, not in git.
+
+## License
+
+Copyright (c) 2026 ilGentEAcutoO.
+
+Public copies are under the [PolyForm Noncommercial License 1.0.0](LICENSE).
+You may read, fork, and run this to study it.
+
+**Any business use requires a paid license**, whether or not you profit from
+the software. Email suanwin.paows@gmail.com
+(see [LICENSE-COMMERCIAL.md](LICENSE-COMMERCIAL.md)).
+
+MIT, Apache-2.0, and AGPL are not used: they allow free use inside a company.
+
+Third-party packages keep their own licenses.

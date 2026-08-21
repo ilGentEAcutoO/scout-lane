@@ -202,6 +202,46 @@ export async function createMeet(env: Env, input: {
   return body.id ? { eventId: body.id, meetUrl: meet } : null;
 }
 
+export async function updateMeet(
+  env: Env,
+  eventId: string,
+  input: { summary?: string; description?: string; start: string; end: string },
+  key = TEAM_TOKEN_KEY,
+): Promise<{ eventId: string; meetUrl: string | null } | null> {
+  if (!eventId || eventId === "local" || eventId === "mcp") return null;
+  if (!googleConfigured(env)) return null;
+  const token = await accessToken(env, key);
+  if (!token) return null;
+  const body: Record<string, unknown> = {
+    start: { dateTime: input.start, timeZone: "Asia/Bangkok" },
+    end: { dateTime: input.end, timeZone: "Asia/Bangkok" },
+  };
+  if (input.summary) body.summary = input.summary;
+  if (input.description) body.description = input.description.slice(0, 8000);
+  const res = await fetch(
+    `https://www.googleapis.com/calendar/v3/calendars/primary/events/${encodeURIComponent(eventId)}`,
+    {
+      method: "PATCH",
+      headers: {
+        authorization: `Bearer ${token}`,
+        "content-type": "application/json",
+      },
+      body: JSON.stringify(body),
+    },
+  );
+  if (!res.ok) return null;
+  const data = (await res.json()) as {
+    id?: string;
+    hangoutLink?: string;
+    conferenceData?: { entryPoints?: Array<{ entryPointType?: string; uri?: string }> };
+  };
+  const meet =
+    data.hangoutLink ||
+    data.conferenceData?.entryPoints?.find((p) => p.entryPointType === "video")?.uri ||
+    null;
+  return data.id ? { eventId: data.id, meetUrl: meet } : null;
+}
+
 export async function deleteMeet(env: Env, eventId: string, key = TEAM_TOKEN_KEY): Promise<void> {
   if (!eventId || eventId === "local" || eventId === "mcp") return;
   const token = await accessToken(env, key);

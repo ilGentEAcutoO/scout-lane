@@ -1,6 +1,7 @@
 {
   "name": "@scout-lane/web",
   "private": true,
+  "license": "PolyForm-Noncommercial-1.0.0",
   "type": "module",
   "scripts": {
     "dev": "wrangler dev --port 8787 --persist-to ../../.wrangler/state",

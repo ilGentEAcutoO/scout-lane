@@ -23,7 +23,7 @@ export {
   type AccessPrincipal,
 } from "./tokens";
 export { ROLES, PERMS, can, capabilities, isRole, type Role, type Perm } from "./rbac";
-export { LIMITS, STAGES, type Stage } from "./limits";
+export { LIMITS, PIPELINE, STAGES, type Stage } from "./limits";
 export {
   ValidationError,
   parseBody,
@@ -34,6 +34,10 @@ export {
   patchUserSchema,
   tokenNameSchema,
   jobSchema,
+  jobGenerateSchema,
+  jobPatchSchema,
+  jobListQuerySchema,
+  candidateListQuerySchema,
   scoutSearchSchema,
   SCOUT_ORIGINS,
   approveSchema,
@@ -41,12 +45,17 @@ export {
   candidatePatchSchema,
   screenFieldsSchema,
   interviewSchema,
+  interviewPatchSchema,
   promptSaveSchema,
   calendarSettingsSchema,
   CALENDAR_MODES,
   sourceModesSchema,
   SOURCE_GROUPS,
   SOURCE_MODES,
+  aiSettingsSchema,
+  aiStatusSchema,
+  AI_PROVIDERS,
+  AI_KEY_SOURCES,
   PROMPT_KEYS,
   uuidSchema,
   stageQuerySchema,

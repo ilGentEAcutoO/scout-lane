@@ -18,11 +18,16 @@ agent-temp/
 .playwright-mcp/
 apps/agent-temp/
 instruction/work/
-videos/**/node_modules/
-videos/**/.hyperframes/
-videos/**/renders/
+videos/
+demo/
 brag-output*/
+REPLY-DRAFT.md
 
 # Google OAuth client downloads — never commit
 **/client_secret*.json
 *.apps.googleusercontent.com.json
+
+# NEVER publish (also strip from history before Public):
+# employer assignment PDFs, JD, cowork log, OAuth client JSON
+instruction/
+ai-settings-mobile.png

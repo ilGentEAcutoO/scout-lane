@@ -8,12 +8,15 @@ export function assertSameOrigin(request: Request): void {
 
   const url = new URL(request.url);
   const origin = request.headers.get("origin");
+  const site = request.headers.get("sec-fetch-site");
   const referer = request.headers.get("referer");
 
-  if (origin) {
+  if (origin && origin !== "null") {
     if (origin !== url.origin) throw new HttpError(403, "csrf_origin");
     return;
   }
+
+  if (site === "same-origin") return;
 
   if (referer) {
     try {

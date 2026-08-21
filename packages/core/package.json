@@ -1,6 +1,7 @@
 {
   "name": "@scout-lane/core",
   "private": true,
+  "license": "PolyForm-Noncommercial-1.0.0",
   "type": "module",
   "exports": {
     ".": "./src/index.ts"

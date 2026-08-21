@@ -1,4 +1,4 @@
-export type TrailKind = "entered" | "moved" | "screened" | "booked" | "cancelled";
+export type TrailKind = "entered" | "moved" | "screened" | "booked" | "rescheduled" | "cancelled";
 
 export async function logTrail(
   db: D1Database,

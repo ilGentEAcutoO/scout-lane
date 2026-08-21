@@ -65,11 +65,35 @@ export const calendarSettingsSchema = z.object({
   shareEmails: z.string().max(4000).optional().or(z.literal("")),
 });
 
+export const AI_PROVIDERS = ["glm", "claude", "openai", "gemini"] as const;
+export const AI_KEY_SOURCES = ["stored", "secret"] as const;
+
+export const aiSettingsSchema = z.object({
+  provider: z.enum(AI_PROVIDERS).optional(),
+  keys: z.partialRecord(z.enum(AI_PROVIDERS), z.string().max(512)).optional(),
+});
+
+/** Public GET shape — never includes ciphertext or plaintext keys. */
+export const aiStatusSchema = z.object({
+  provider: z.enum(AI_PROVIDERS),
+  providers: z.array(
+    z.object({
+      id: z.enum(AI_PROVIDERS),
+      label: z.string(),
+      hint: z.string(),
+      keyFrom: z.string().url(),
+      configured: z.boolean(),
+      source: z.enum(AI_KEY_SOURCES).nullable(),
+    }),
+  ),
+});
+
 export const SOURCE_GROUPS = ["thai_code", "community", "apify_web", "linkedin", "job_boards"] as const;
 export const SOURCE_MODES = ["self", "shop", "link", "off"] as const;
 
 export const sourceModesSchema = z.object({
   modes: z.partialRecord(z.enum(SOURCE_GROUPS), z.enum(SOURCE_MODES)),
+  shopKey: z.string().max(256).optional(),
 });
 
 export const tokenNameSchema = z.object({
@@ -79,6 +103,34 @@ export const tokenNameSchema = z.object({
 export const jobSchema = z.object({
   title: z.string().trim().min(LIMITS.jobTitleMin).max(LIMITS.jobTitleMax),
   description: z.string().trim().min(LIMITS.jobDescMin).max(LIMITS.jobDescMax),
+  notes: z.string().trim().max(LIMITS.jdMax).optional(),
+});
+
+export const jobGenerateSchema = z.object({
+  title: z.string().trim().min(LIMITS.jobTitleMin).max(LIMITS.jobTitleMax),
+  notes: z.string().trim().min(LIMITS.jdMin).max(LIMITS.jdMax),
+  jobId: z.string().uuid().optional(),
+});
+
+export const jobPatchSchema = z.object({
+  title: z.string().trim().min(LIMITS.jobTitleMin).max(LIMITS.jobTitleMax).optional(),
+  description: z.string().trim().min(LIMITS.jobDescMin).max(LIMITS.jobDescMax).optional(),
+  notes: z.string().trim().max(LIMITS.jdMax).optional(),
+});
+
+export const jobListQuerySchema = z.object({
+  q: z.string().trim().max(80).default(""),
+  page: z.coerce.number().int().min(1).max(500).default(1),
+  pageSize: z.coerce.number().int().min(5).max(100).default(20),
+});
+
+export const candidateListQuerySchema = z.object({
+  q: z.string().trim().max(80).default(""),
+  stage: z.string().trim().max(40).optional(),
+  source: z.string().trim().max(LIMITS.sourceMax).optional(),
+  jobId: z.string().uuid().optional(),
+  page: z.coerce.number().int().min(1).max(500).default(1),
+  pageSize: z.coerce.number().int().min(5).max(200).default(20),
 });
 
 export const SCOUT_ORIGINS = ["any", "thai", "foreign"] as const;
@@ -120,7 +172,7 @@ export const candidatePatchSchema = z.object({
 
 export const screenFieldsSchema = z.object({
   jobId: z.string().uuid(),
-  name: z.string().trim().min(LIMITS.candidateNameMin).max(LIMITS.candidateNameMax),
+  name: z.string().trim().max(LIMITS.candidateNameMax).optional().or(z.literal("")),
   email: z.string().email().max(LIMITS.emailMax).optional().or(z.literal("")),
   text: z.string().max(LIMITS.resumeTextMax).optional().or(z.literal("")),
 });
@@ -132,7 +184,24 @@ export const interviewSchema = z.object({
   interviewerId: z.string().uuid().optional(),
 });
 
+export const interviewPatchSchema = z
+  .object({
+    candidateId: z.string().uuid().optional(),
+    startsAt: z.string().min(10).max(40).optional(),
+    minutes: z.number().int().min(LIMITS.interviewMinutesMin).max(LIMITS.interviewMinutesMax).optional(),
+    interviewerId: z.union([z.string().uuid(), z.literal("")]).optional(),
+  })
+  .refine(
+    (v) =>
+      v.candidateId !== undefined ||
+      v.startsAt !== undefined ||
+      v.minutes !== undefined ||
+      v.interviewerId !== undefined,
+    { message: "empty_patch" },
+  );
+
 export const PROMPT_KEYS = [
+  "prompt.job_draft",
   "prompt.scout_query",
   "prompt.scout_rank",
   "prompt.screen",

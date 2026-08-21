@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/styles.css?v=mira8">
+  <link rel="stylesheet" href="/styles.css?v=lilac22">
   <script src="/theme-boot.js?v=mira2"></script>
 </head>
 <body>
@@ -25,53 +25,61 @@
       </div>
       <nav>
         <span class="nav-pill" id="nav-pill" aria-hidden="true"></span>
-        <button data-tab="home" class="on">
+        <a href="/app/" data-tab="home" class="on">
           <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg></span>
           ภาพรวม
-        </button>
+        </a>
 
         <div class="nav-group">
           <span class="nav-label">สรรหา</span>
-          <button data-tab="scout">
+          <a href="/app/scout" data-tab="scout">
             <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></span>
             ค้นหา Candidate
-          </button>
-          <button data-tab="screen">
+          </a>
+          <a href="/app/jobs" data-tab="jobs">
+            <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><rect width="16" height="14" x="4" y="6" rx="2"/><path d="M4 12h16"/></svg></span>
+            ตำแหน่ง
+          </a>
+          <a href="/app/screen" data-tab="screen">
             <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg></span>
             คัดกรอง Resume
-          </button>
+          </a>
         </div>
 
         <div class="nav-group">
           <span class="nav-label">ติดตาม</span>
-          <button data-tab="board">
+          <a href="/app/board" data-tab="board">
             <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M8 7v10"/><path d="M16 7v4"/></svg></span>
+            คัมบัง
+          </a>
+          <a href="/app/people" data-tab="people">
+            <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
             ผู้สมัคร
-          </button>
+          </a>
         </div>
 
         <div class="nav-group">
           <span class="nav-label">การสัมภาษณ์</span>
-          <button data-tab="schedule">
+          <a href="/app/schedule" data-tab="schedule">
             <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg></span>
             การสัมภาษณ์
-          </button>
+          </a>
         </div>
 
         <div class="nav-group" id="desk-group">
           <span class="nav-label">ระบบ</span>
-          <button data-tab="users" hidden>
+          <a href="/app/users" data-tab="users" hidden>
             <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
             ผู้ใช้
-          </button>
-          <button data-tab="profile">
+          </a>
+          <a href="/app/profile" data-tab="profile">
             <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
             โปรไฟล์
-          </button>
-          <button data-tab="settings">
+          </a>
+          <a href="/app/settings" data-tab="settings">
             <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg></span>
             ตั้งค่า
-          </button>
+          </a>
         </div>
       </nav>
       <div class="side-foot">
@@ -103,75 +111,61 @@
       </header>
       <main>
         <section data-panel="home" class="page-enter">
-          <div class="tab-scope">
-            <div class="page-tabs" role="tablist">
-              <button type="button" class="page-tab on" data-ptab="today">วันนี้</button>
-              <button type="button" class="page-tab" data-ptab="flow">ขั้นตอน</button>
+          <div class="desk">
+            <div class="desk-hero">
+              <div class="desk-greet">
+                <p class="eyebrow" id="home-when"></p>
+                <h3 id="home-greet">สวัสดี</h3>
+                <p class="muted" id="home-pulse">กำลังโหลด</p>
+              </div>
+              <button class="desk-next" type="button" data-go="schedule" id="home-next">
+                <span class="desk-next-kicker">นัดถัดไป</span>
+                <strong>กำลังโหลด</strong>
+                <small>รอข้อมูลนัด</small>
+              </button>
             </div>
-            <div data-ptab-panel="today">
-          <div class="stats">
-            <div class="stat">
-              <span class="ico-dot" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
-              <div><div class="l">ผู้สมัครในระบบ</div><div class="n" id="stat-people">0</div></div>
+            <div class="home-funnel" id="home-funnel"><div class="data-wait" aria-busy="true"><span class="spin"></span>กำลังโหลด</div></div>
+            <div class="mods">
+              <button class="mod mod-prime" type="button" data-go="scout">
+                <span class="mod-top">
+                  <span class="mod-ico"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></span>
+                  <span class="mod-go" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></span>
+                </span>
+                <strong>ค้นหา Candidate</strong>
+                <small>ดึงโปรไฟล์สาธารณะจาก job description ของตำแหน่ง</small>
+              </button>
+              <button class="mod" type="button" data-go="screen">
+                <span class="mod-top">
+                  <span class="mod-ico"><svg viewBox="0 0 24 24"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg></span>
+                  <span class="mod-go" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></span>
+                </span>
+                <strong>คัดกรอง Resume</strong>
+                <small>คะแนน 3 ด้าน เทียบกับ job description พร้อมเหตุผล</small>
+              </button>
+              <button class="mod" type="button" data-go="people">
+                <span class="mod-top">
+                  <span class="mod-ico"><svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></span>
+                  <span class="mod-go" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></span>
+                </span>
+                <strong>ผู้สมัคร</strong>
+                <small>ค้นหาและดูขั้นเป็นตาราง</small>
+              </button>
+              <button class="mod" type="button" data-go="schedule">
+                <span class="mod-top">
+                  <span class="mod-ico"><svg viewBox="0 0 24 24"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg></span>
+                  <span class="mod-go" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></span>
+                </span>
+                <strong>การสัมภาษณ์</strong>
+                <small>เลือกวัน แล้วกดช่องว่างเพื่อนัด</small>
+              </button>
             </div>
-            <div class="stat">
-              <span class="ico-dot" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg></span>
-              <div><div class="l">นัดสัมภาษณ์</div><div class="n" id="stat-meets">0</div></div>
-            </div>
-            <div class="stat">
-              <span class="ico-dot" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg></span>
-              <div><div class="l">ตำแหน่งงาน</div><div class="n" id="stat-jobs">0</div></div>
-            </div>
-          </div>
-          <div class="mods">
-            <button class="mod" type="button" data-go="scout">
-              <span class="mod-top">
-                <span class="mod-ico"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></span>
-                <span class="mod-go" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></span>
-              </span>
-              <strong>ค้นหา Candidate</strong>
-              <small>ดึงโปรไฟล์สาธารณะจาก JD ของตำแหน่ง</small>
-            </button>
-            <button class="mod" type="button" data-go="screen">
-              <span class="mod-top">
-                <span class="mod-ico"><svg viewBox="0 0 24 24"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg></span>
-                <span class="mod-go" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></span>
-              </span>
-              <strong>คัดกรอง Resume</strong>
-              <small>คะแนน 3 ด้าน เทียบกับ JD พร้อมเหตุผล</small>
-            </button>
-            <button class="mod" type="button" data-go="board">
-              <span class="mod-top">
-                <span class="mod-ico"><svg viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M8 7v10"/><path d="M16 7v4"/></svg></span>
-                <span class="mod-go" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></span>
-              </span>
-              <strong>ผู้สมัคร</strong>
-              <small>ตามว่าผู้สมัครอยู่ขั้นไหนแล้ว</small>
-            </button>
-            <button class="mod" type="button" data-go="schedule">
-              <span class="mod-top">
-                <span class="mod-ico"><svg viewBox="0 0 24 24"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg></span>
-                <span class="mod-go" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></span>
-              </span>
-              <strong>การสัมภาษณ์</strong>
-              <small>เลือกวัน แล้วกดช่องว่างเพื่อนัด</small>
-            </button>
-          </div>
-          <div class="panel next-card">
-            <h3>นัดถัดไป</h3>
-            <div id="home-next" class="muted">ยังไม่มีนัด</div>
-          </div>
-            </div>
-            <div data-ptab-panel="flow" class="is-off">
-          <div class="panel ai-lane">
-            <p class="eyebrow">ขั้นตอนสรรหา</p>
-            <h3>จากค้นหาผู้สมัคร จนถึงนัดสัมภาษณ์</h3>
-            <div class="ai-steps">
-              <div class="ai-step"><span class="ord">1 · ค้นหา</span><strong>จัดอันดับจาก JD</strong><small class="muted">ดึงโปรไฟล์สาธารณะแล้วให้คะแนนความเข้ากัน — LinkedIn เป็นลิงก์ให้ HR ถ้ายังไม่เปิดร้านขูด</small></div>
-              <div class="ai-step"><span class="ord">2 · คัดกรอง</span><strong>คะแนน 3 ด้าน 0–10</strong><small class="muted">Skills / Experience / Culture + จุดแข็ง ธงแดง และคำถามโทรสั้น</small></div>
-              <div class="ai-step"><span class="ord">3 · นัดสัมภาษณ์</span><strong>ชุดคำถามให้ทีม</strong><small class="muted">ใส่ในคำอธิบายนัดบนปฏิทิน ไม่ให้ไปถามทั่วไป</small></div>
-            </div>
-          </div>
+            <div class="desk-tape">
+              <p class="eyebrow">เส้นทางสรรหา</p>
+              <div class="ai-steps">
+                <div class="ai-step"><span class="ord">1 · ค้นหา</span><strong>จัดอันดับจาก job description</strong><small class="muted">ดึงโปรไฟล์สาธารณะแล้วให้คะแนนความเข้ากัน — LinkedIn ดึงผ่าน Apify</small></div>
+                <div class="ai-step"><span class="ord">2 · คัดกรอง</span><strong>คะแนน 3 ด้าน 0–10</strong><small class="muted">Skills / Experience / Culture + จุดแข็ง ธงแดง และคำถามโทรสั้น</small></div>
+                <div class="ai-step"><span class="ord">3 · นัดสัมภาษณ์</span><strong>ชุดคำถามให้ทีม</strong><small class="muted">ใส่ในคำอธิบายนัดบนปฏิทิน ไม่ให้ไปถามทั่วไป</small></div>
+              </div>
             </div>
           </div>
         </section>
@@ -184,53 +178,116 @@
             </div>
             <div data-ptab-panel="query">
             <div class="panel search-panel">
-              <div class="search-row">
-                <input id="jd-title" class="search-query" maxlength="160" placeholder="ตำแหน่งที่ต้องการหา" value="Tech Lead / Senior Developer (AI Workflow &amp; Automation)">
-                <button class="btn" id="jd-search" type="button">ค้นหา</button>
+              <div class="job-pick" id="job-using">
+                <div class="job-pick-head">
+                  <p class="src-label">เลือกตำแหน่ง</p>
+                  <button class="btn ghost" id="goto-jobs" type="button">คลังตำแหน่ง</button>
+                </div>
+                <ul class="job-pick-list" id="scout-job-list" role="listbox" aria-label="ตำแหน่ง">
+                  <li><div class="data-wait" aria-busy="true"><span class="spin"></span>กำลังโหลด</div></li>
+                </ul>
               </div>
-              <details class="jd-fold">
-                <summary>รายละเอียดตำแหน่ง · ใช้เทียบ JD</summary>
-                <textarea id="jd-text" maxlength="12000">H+ Hotel Plus / บริษัท พักดีพลัส จำกัด
-Hybrid Working | เข้าออฟฟิศทุกวันพุธ · Siam Pathumwan House ถนนพญาไท
-จันทร์–ศุกร์ และ 1 เสาร์/เดือน · 09.00–18.00
-
-Tech Lead / Senior Developer (AI Workflow &amp; Automation)
-วิเคราะห์ requirement ออกแบบ architecture และ data flow
-พัฒนา AI workflow, automation, LLM, RAG, MCP
-full stack web และ internal tools
-REST API, webhook, OAuth, Google Workspace, LINE
-database, data pipeline, ETL, deploy และถ่ายทอดความรู้
-
-Stack: React, TypeScript, Node.js, Express, PostgreSQL, MongoDB, OpenAI, Claude, Gemini, RAG, MCP
-ประสบการณ์ 3–5 ปี และโครงการ AI automation อย่างน้อย 3 โครงการ</textarea>
-              </details>
-              <p class="src-label">แหล่ง</p>
+              <label for="jd-title">ชื่อที่ใช้ค้น</label>
+              <input id="jd-title" class="search-query" maxlength="160" placeholder="เช่น Tech Lead / Senior Developer" autocomplete="off">
+              <div class="tab-scope scout-write" data-tabs="always">
+                <nav class="page-tabs" id="scout-write-tabs">
+                  <button type="button" class="page-tab on" data-ptab="notes">ความรับผิดชอบ</button>
+                  <button type="button" class="page-tab" data-ptab="desc">Job description</button>
+                </nav>
+                <div data-ptab-panel="notes">
+                  <textarea id="jd-notes" maxlength="12000" placeholder="เช่น ทำ RAG, MCP, internal tools, hybrid กรุงเทพ" aria-label="ความรับผิดชอบ"></textarea>
+                </div>
+                <div data-ptab-panel="desc" class="is-off">
+                  <p class="muted" id="scout-gen-hint" aria-live="polite"></p>
+                  <div class="search-actions">
+                    <button class="btn" id="jd-draft" type="button">
+                      <span class="btn-label">สร้าง job description</span>
+                      <span class="btn-wait" aria-hidden="true"><span class="spin"></span>กำลังเขียน…</span>
+                    </button>
+                  </div>
+                  <textarea id="jd-text" maxlength="12000" placeholder="ว่างอยู่ — กดสร้าง หรือวางข้อความเอง" aria-label="Job description"></textarea>
+                  <div class="jd-compare" id="scout-jd-compare" hidden>
+                    <div class="jd-compare-cols">
+                      <section>
+                        <h4>ของเดิม</h4>
+                        <pre class="jd-compare-old" id="scout-jd-old" data-skip-dirty></pre>
+                      </section>
+                      <section>
+                        <h4>แบบร่างใหม่</h4>
+                        <textarea id="scout-jd-draft" maxlength="12000" aria-label="แบบร่าง job description" data-skip-dirty></textarea>
+                      </section>
+                    </div>
+                    <div class="row">
+                      <button type="button" class="btn" id="scout-jd-keep">ใช้แบบร่าง</button>
+                      <button type="button" class="btn ghost" id="scout-jd-drop">คงของเดิม</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <p class="src-label">แหล่งที่ดึง</p>
               <div class="src-picks" id="source-picks"></div>
-              <p class="muted" id="source-hint"></p>
+              <p class="src-caption" id="source-caption" aria-live="polite"></p>
+              <div class="search-actions">
+                <button class="btn" id="jd-search" type="button">
+                  <span class="btn-label">ค้นหา Candidate</span>
+                  <span class="btn-wait" aria-hidden="true"><span class="spin"></span>กำลังค้นหา…</span>
+                </button>
+              </div>
+              <p class="muted" id="source-hint" hidden></p>
               <p class="muted" id="source-analysis" hidden></p>
               <div id="source-lanes" hidden></div>
               <p class="muted" id="scout-meta"></p>
-              <details class="source-fold">
-                <summary>ความคืบหน้า</summary>
-                <ol class="scout-log" id="scout-log"></ol>
-              </details>
             </div>
             </div>
             <div data-ptab-panel="results" class="is-off">
-            <div class="panel" id="shortlist-panel">
-              <div class="result-head">
-                <h3>ผลค้นหา</h3>
-                <span class="muted" id="result-count">ยังไม่ได้ค้น</span>
+            <div class="scout-results-shell" id="shortlist-panel">
+              <div class="panel scout-results-main">
+                <div class="result-head">
+                  <h3>ผลค้นหา</h3>
+                  <span class="muted" id="result-count">ยังไม่ได้ค้น</span>
+                </div>
+                <div class="page-tabs result-filters" id="result-filters" role="tablist"></div>
+                <div id="shortlist"><div class="data-wait" aria-busy="true"><span class="spin"></span>กำลังโหลด</div></div>
+                <div class="row result-actions">
+                  <button class="btn" id="approve">ส่งที่เลือกเป็นผู้สมัคร</button>
+                  <button class="btn ghost" id="approve-all" type="button">ส่งทั้งหมดเป็นผู้สมัคร</button>
+                </div>
               </div>
-              <div class="official-links" id="official-links"></div>
-              <div id="shortlist"></div>
-              <div class="row result-actions">
-                <button class="btn" id="approve">ส่งที่เลือกเป็นผู้สมัคร</button>
-                <button class="btn ghost" id="approve-all" type="button">ส่งทั้งหมดเป็นผู้สมัคร</button>
-              </div>
+              <aside class="panel" id="scout-progress">
+                <p class="src-label">ความคืบหน้า</p>
+                <ol class="scout-stepper" id="scout-pipe" aria-label="ขั้นตอนค้นหา"></ol>
+                <p class="scout-now" id="scout-now" aria-live="polite"></p>
+                <details class="scout-sources-fold">
+                  <summary>
+                    <span>แหล่งที่ดึง</span>
+                    <em id="scout-sources-sum">ยังไม่เริ่ม</em>
+                  </summary>
+                  <ul class="scout-sources" id="scout-sources"></ul>
+                </details>
+                <ol class="scout-log" id="scout-log"></ol>
+                <p class="muted scout-next" id="scout-next"></p>
+              </aside>
             </div>
             </div>
           </div>
+        </section>
+
+        <section data-panel="jobs" hidden>
+          <div class="lane-bar">
+            <label class="sr-only" for="job-search">ค้นตำแหน่ง</label>
+            <input id="job-search" type="search" data-skip-dirty autocomplete="off" spellcheck="false" maxlength="80" placeholder="ค้นชื่อตำแหน่ง…">
+            <select id="job-group" data-skip-dirty aria-label="จัดกลุ่ม">
+              <option value="none">ไม่จัดกลุ่ม</option>
+              <option value="status">กลุ่มตามสถานะค้น</option>
+              <option value="month">กลุ่มตามเดือนที่สร้าง</option>
+            </select>
+            <p class="muted" id="job-count" style="margin:0;flex:1"></p>
+            <button class="btn" id="job-new" type="button">ตำแหน่งใหม่</button>
+          </div>
+          <div class="panel job-panel">
+            <div id="job-table" class="data-table-wrap job-sheet"><div class="data-wait" aria-busy="true"><span class="spin"></span>กำลังโหลด</div></div>
+          </div>
+          <div class="pager" id="job-pager" hidden></div>
         </section>
 
         <section data-panel="screen" hidden>
@@ -239,53 +296,87 @@ Stack: React, TypeScript, Node.js, Express, PostgreSQL, MongoDB, OpenAI, Claude,
               <button type="button" class="page-tab on" data-ptab="form">ใส่เรซูเม่</button>
               <button type="button" class="page-tab" data-ptab="score">ผลคะแนน</button>
             </div>
-          <p class="muted" style="margin:0 0 12px">วางเรซูเม่หรืออัปโหลด PDF เพื่อคัดกรองเทียบกับ JD ของตำแหน่งนี้</p>
+          <p class="muted" style="margin:0 0 12px">เลือกตำแหน่ง แล้วอัปโหลด PDF ได้หลายไฟล์ — ระบบอ่านชื่อ อีเมล เบอร์จากเรซูเม่</p>
           <div class="grid">
             <form class="panel" id="screen-form" data-ptab-panel="form">
-              <label>ตำแหน่ง</label>
+              <label for="screen-job">ตำแหน่ง</label>
               <select id="screen-job" name="jobId" required></select>
+              <label class="file-drop" for="screen-file" id="screen-drop">
+                <input id="screen-file" name="file" type="file" accept="application/pdf" multiple required>
+                <strong id="screen-file-title">อัปโหลดเรซูเม่ PDF</strong>
+                <span id="screen-file-name">ลากไฟล์มาวาง หรือกดเพื่อเลือก — เลือกได้หลายไฟล์</span>
+              </label>
               <div class="row">
-                <input id="new-job-title" placeholder="หรือสร้างตำแหน่งใหม่" maxlength="160">
-                <button class="btn ghost" type="button" id="new-job-add">สร้างตำแหน่ง</button>
+                <button class="btn" type="submit" id="screen-go">
+                  <span class="btn-label">คัดกรอง Resume</span>
+                  <span class="btn-wait" aria-hidden="true"><span class="spin"></span>กำลังคัดกรอง…</span>
+                </button>
               </div>
-              <textarea id="new-job-desc" placeholder="คำอธิบายตำแหน่ง (อย่างน้อย 10 ตัวอักษร)" maxlength="12000"></textarea>
-              <label>ชื่อ</label>
-              <input name="name" required maxlength="160">
-              <label>อีเมล (ไม่บังคับ)</label>
-              <input name="email" type="email" maxlength="200">
-              <label>วางข้อความเรซูเม่</label>
-              <textarea name="text" maxlength="20000"></textarea>
-              <label>หรืออัปโหลด PDF</label>
-              <input name="file" type="file" accept="application/pdf">
-              <div class="row"><button class="btn" type="submit">คัดกรอง Resume</button></div>
+              <p class="muted" id="screen-form-msg"></p>
             </form>
-            <div class="panel is-off" id="scorecard" data-ptab-panel="score"><p class="muted">ผลคะแนน Skills / Experience / Culture จะขึ้นที่นี่ พร้อมเหตุผลและคำถามโทรสั้น</p></div>
+            <div class="panel is-off" id="scorecard" data-ptab-panel="score">
+              <div class="tab-scope" data-tabs="always">
+                <nav class="page-tabs" id="screen-result-tabs" role="tablist">
+                  <button type="button" class="page-tab on" data-ptab="trace">ความคืบหน้า</button>
+                  <button type="button" class="page-tab" data-ptab="marks">ผลคะแนน</button>
+                  <button type="button" class="page-tab" data-ptab="pack">ชุดสัมภาษณ์</button>
+                </nav>
+                <div data-ptab-panel="trace">
+                  <ol class="scout-log" id="screen-log"></ol>
+                  <p class="muted" id="screen-trace-empty">อัปโหลดเรซูเม่แล้วกดคัดกรอง — ความคืบจะขึ้นที่นี่ ไปหน้าอื่นได้</p>
+                </div>
+                <div data-ptab-panel="marks" class="is-off">
+                  <div id="screen-score"><p class="muted">ผลคะแนน Skills / Experience / Culture จะขึ้นที่นี่ เมื่อเสร็จแล้วเปิดในคัมบังหรือนัดสัมภาษณ์ได้</p></div>
+                </div>
+                <div data-ptab-panel="pack" class="is-off">
+                  <div id="screen-pack"><p class="muted">ชุดคำถามให้ทีมสัมภาษณ์ — สร้างจากแท็บผลคะแนนเมื่อคัดกรองเสร็จ</p></div>
+                </div>
+              </div>
+            </div>
           </div>
           </div>
         </section>
 
         <section data-panel="board" hidden>
-          <p class="muted" style="margin:0 0 10px">ผู้สมัครทั้งเส้น — ลากการ์ดหรือเลือกขั้น เปิดการ์ดเพื่อแก้ข้อมูลและดูผลการคัดกรอง</p>
-          <div class="funnel" id="funnel"></div>
-          <div class="row">
+          <p class="muted" style="margin:0 0 10px">คัมบังท่อสมัคร — ลากการ์ดหรือเลือกขั้น เปิดการ์ดเพื่อแก้ข้อมูล</p>
+          <div class="funnel" id="funnel"><div class="data-wait" aria-busy="true"><span class="spin"></span>กำลังโหลด</div></div>
+          <div class="lane-bar">
             <input id="manual-name" placeholder="ชื่อผู้สมัคร" maxlength="160">
             <input id="manual-source" placeholder="แหล่ง เช่น referral" value="manual" maxlength="40">
             <button class="btn" id="manual-add">เพิ่มมือ</button>
-            <select id="filter-stage"><option value="">ทุกสเตจ</option></select>
-            <select id="filter-source"><option value="">ทุกแหล่ง</option></select>
-            <select id="filter-job"><option value="">ทุกตำแหน่ง</option></select>
-            <div class="view-toggle">
-              <button class="btn ghost on" type="button" id="view-board">บอร์ด</button>
-              <button class="btn ghost" type="button" id="view-list">ลิสต์</button>
+            <select id="filter-stage" data-skip-dirty aria-label="กรองขั้น"><option value="">ทุกขั้น</option></select>
+            <select id="filter-source" data-skip-dirty aria-label="กรองแหล่ง"><option value="">ทุกแหล่ง</option></select>
+            <select id="filter-job" data-skip-dirty aria-label="กรองตำแหน่ง"><option value="">ทุกตำแหน่ง</option></select>
+          </div>
+          <div class="board" id="board"><div class="data-wait" aria-busy="true"><span class="spin"></span>กำลังโหลด</div></div>
+        </section>
+
+        <section data-panel="people" hidden>
+          <div class="lane-bar">
+            <input id="people-q" type="search" data-skip-dirty autocomplete="off" spellcheck="false" maxlength="80" placeholder="ค้นชื่อ อีเมล เบอร์…">
+            <select id="people-stage" data-skip-dirty aria-label="กรองขั้น"><option value="">ทุกขั้น</option></select>
+            <select id="people-source" data-skip-dirty aria-label="กรองแหล่ง"><option value="">ทุกแหล่ง</option></select>
+            <select id="people-job" data-skip-dirty aria-label="กรองตำแหน่ง"><option value="">ทุกตำแหน่ง</option></select>
+            <div class="view-toggle" role="group" aria-label="มุมมอง">
+              <button type="button" class="on" id="people-view-list" aria-label="ตาราง" title="ตาราง" aria-pressed="true">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M3 15h18"/><path d="M9 3v18"/></svg>
+              </button>
+              <button type="button" id="people-view-grid" aria-label="การ์ด" title="การ์ด" aria-pressed="false">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><rect width="7" height="7" x="3" y="3" rx="1.5"/><rect width="7" height="7" x="14" y="3" rx="1.5"/><rect width="7" height="7" x="3" y="14" rx="1.5"/><rect width="7" height="7" x="14" y="14" rx="1.5"/></svg>
+              </button>
             </div>
           </div>
-          <div class="board" id="board"></div>
-          <div class="veil" id="drawer-veil" hidden></div>
-          <aside class="drawer" id="person-drawer" hidden>
+          <div id="people-grid" class="people-grid"><div class="data-wait" aria-busy="true"><span class="spin"></span>กำลังโหลด</div></div>
+          <div class="pager" id="people-pager"></div>
+        </section>
+
+        <div class="veil" id="drawer-veil" hidden></div>
+        <aside class="drawer" id="person-drawer" hidden>
             <div class="drawer-top">
               <button class="btn ghost" type="button" id="drawer-close">ปิด</button>
             </div>
             <p class="eyebrow" id="drawer-src"></p>
+            <p class="drop-flag" id="drawer-drop" hidden>ไม่ผ่าน — ออกจากท่อสมัคร</p>
             <h2 id="drawer-name"></h2>
             <form id="person-edit" class="person-edit">
               <label>ชื่อ</label>
@@ -313,76 +404,43 @@ Stack: React, TypeScript, Node.js, Express, PostgreSQL, MongoDB, OpenAI, Claude,
             </div>
             <div id="step-body" class="step-body"></div>
           </aside>
-        </section>
 
         <section data-panel="schedule" hidden>
-          <div class="tab-scope">
-            <div class="page-tabs" role="tablist">
-              <button type="button" class="page-tab on" data-ptab="grid">ตาราง</button>
-              <button type="button" class="page-tab" data-ptab="book">นัดสัมภาษณ์</button>
-            </div>
           <div class="cal-head">
             <div class="cal-nav">
               <button class="btn ghost" id="cal-prev" type="button">←</button>
               <button class="btn ghost" id="cal-today" type="button">วันนี้</button>
               <button class="btn ghost" id="cal-next" type="button">→</button>
               <strong id="cal-range"></strong>
+              <div class="view-toggle cal-views" role="group" aria-label="มุมมองปฏิทิน">
+                <button type="button" id="cal-view-week" class="on">สัปดาห์</button>
+                <button type="button" id="cal-view-month">เดือน</button>
+              </div>
             </div>
-            <p class="muted" id="book-msg">ตารางสัปดาห์รายชั่วโมง · ลาย = ไม่ว่าง · ก้อนสี = นัดในเลน</p>
+            <p class="muted" id="book-msg">กดช่องว่างเพื่อสร้างนัด · กดก้อนสีเพื่อแก้หรือยกเลิก</p>
             <a class="btn ghost" id="google-connect" href="/api/schedule/oauth/start?kind=team">เชื่อมปฏิทินทีม</a>
           </div>
           <div class="who-row" id="cal-who"></div>
           <div class="desk-cal">
-            <aside class="mini-month" id="mini-month" data-ptab-panel="grid"></aside>
-            <div class="weekbox" data-ptab-panel="grid">
-              <div class="week-grid" id="week-grid"></div>
+            <aside class="cal-side">
+              <div class="mini-month" id="mini-month"></div>
+              <div class="upcoming-box" id="upcoming"><h3>คิวถัดไป</h3><div class="data-wait" aria-busy="true"><span class="spin"></span>กำลังโหลด</div></div>
+            </aside>
+            <div class="weekbox">
+              <div class="week-grid" id="week-grid"><div class="data-wait" aria-busy="true"><span class="spin"></span>กำลังโหลด</div></div>
             </div>
-            <form class="panel book-card is-off" id="book-form" data-ptab-panel="book">
-              <div id="pick-empty" class="pick-empty">
-                <strong>ยังไม่ได้เลือกเวลา</strong>
-                <p class="muted">คลิกช่องว่างทางซ้าย แล้วช่วงนัดจะโชว์ที่นี่</p>
-              </div>
-              <div id="pick-card" hidden>
-                <p class="eyebrow">ช่วงที่เลือก</p>
-                <div class="pick-when" id="pick-when"></div>
-                <label>ผู้สมัคร</label>
-                <select id="book-candidate" required></select>
-                <label>คนสัมภาษณ์</label>
-                <select id="book-interviewer"></select>
-                <label>ความยาว</label>
-                <div class="dur" id="dur-pills">
-                  <button type="button" data-min="15">15</button>
-                  <button type="button" data-min="30">30</button>
-                  <button type="button" data-min="45" class="on">45</button>
-                  <button type="button" data-min="60">60</button>
-                  <button type="button" data-min="90">90</button>
-                </div>
-                <input name="startsAt" type="hidden">
-                <input name="minutes" type="hidden" value="45">
-                <div class="row"><button class="btn" type="submit">ยืนยันนัดนี้</button></div>
-              </div>
-              <p class="err" id="book-err"></p>
-              <div id="upcoming"></div>
-            </form>
-          </div>
           </div>
         </section>
 
         <section data-panel="users" hidden>
           <div class="panel">
-            <div class="row">
-              <input id="user-name" placeholder="username" autocomplete="off" maxlength="32">
-              <input id="user-pass" type="password" placeholder="password ≥ 10" autocomplete="new-password" maxlength="200">
-              <select id="user-role">
-                <option value="member">member</option>
-                <option value="admin">admin</option>
-              </select>
-              <button class="btn" id="user-add">เพิ่มผู้ใช้</button>
+            <div class="lane-bar">
+              <p class="muted" id="user-msg" style="margin:0;flex:1">บัญชีในระบบ — กดแก้ไขเพื่อปรับสิทธิ์</p>
+              <button class="btn" type="button" id="user-open-add">เพิ่มผู้ใช้</button>
             </div>
-            <p class="muted" id="user-msg"></p>
-            <table>
+            <table class="list-table">
               <thead><tr><th>ชื่อ</th><th>บทบาท</th><th>สถานะ</th><th></th></tr></thead>
-              <tbody id="user-rows"></tbody>
+              <tbody id="user-rows"><tr><td colspan="4"><div class="data-wait" aria-busy="true"><span class="spin"></span>กำลังโหลด</div></td></tr></tbody>
             </table>
           </div>
         </section>
@@ -416,7 +474,7 @@ Stack: React, TypeScript, Node.js, Express, PostgreSQL, MongoDB, OpenAI, Claude,
               <h3>เชื่อม MCP แบบ OAuth</h3>
               <p class="muted">วาง URL นี้เป็น custom connector — ไคลเอนต์จะค้นพบ OAuth แล้วเด้งหน้าเข้าสู่ระบบ Scout Lane ให้เอง ไม่ต้องวาง token</p>
               <div class="row">
-                <pre class="token-box" id="mcp-url" style="flex:1;margin:0">http://127.0.0.1:8790/mcp</pre>
+                <pre class="token-box" id="mcp-url" style="flex:1;margin:0">https://scout-lane-mcp.sornkan.workers.dev/mcp</pre>
                 <button class="btn ghost" id="copy-mcp-url" type="button">คัดลอก</button>
               </div>
               <p class="muted" id="copy-mcp-msg"></p>
@@ -434,7 +492,7 @@ Stack: React, TypeScript, Node.js, Express, PostgreSQL, MongoDB, OpenAI, Claude,
               <pre id="token-out" class="token-box muted"></pre>
               <table>
                 <thead><tr><th>ชื่อ</th><th>สร้างเมื่อ</th><th></th></tr></thead>
-                <tbody id="token-rows"></tbody>
+                <tbody id="token-rows"><tr><td colspan="3"><div class="data-wait" aria-busy="true"><span class="spin"></span>กำลังโหลด</div></td></tr></tbody>
               </table>
             </div>
           </div>
@@ -442,69 +500,263 @@ Stack: React, TypeScript, Node.js, Express, PostgreSQL, MongoDB, OpenAI, Claude,
         </section>
 
         <section data-panel="settings" hidden>
-          <div class="tab-scope" data-tabs="always">
-            <div class="page-tabs" role="tablist">
-              <button type="button" class="page-tab on" data-ptab="sources">แหล่ง</button>
-              <button type="button" class="page-tab" data-ptab="calendar">ปฏิทิน</button>
-              <button type="button" class="page-tab" data-ptab="prompts">Prompt</button>
+          <div class="tab-scope set-desk" data-tabs="always">
+            <div class="set-toolbar">
+              <div class="page-tabs" role="tablist">
+                <button type="button" class="page-tab on" data-ptab="sources">แหล่ง</button>
+                <button type="button" class="page-tab" data-ptab="ai">โมเดล</button>
+                <button type="button" class="page-tab" data-ptab="calendar">ปฏิทิน</button>
+                <button type="button" class="page-tab" data-ptab="prompts">พรอมต์</button>
+              </div>
+              <div class="set-actions">
+                <p class="muted" id="set-msg"></p>
+                <a class="btn ghost" id="cal-team-connect" href="/api/schedule/oauth/start?kind=team" hidden>เชื่อมบัญชีทีม</a>
+                <button class="btn" id="src-settings-save" type="button" data-set-save="sources">บันทึก</button>
+                <button class="btn" id="ai-settings-save" type="button" data-set-save="ai" hidden>บันทึก</button>
+                <button class="btn" id="cal-settings-save" type="button" data-set-save="calendar" hidden>บันทึก</button>
+                <button class="btn" id="prompt-save" type="button" data-set-save="prompts" hidden>บันทึก</button>
+              </div>
             </div>
-          <div class="panel" id="src-settings" data-ptab-panel="sources" hidden style="margin-bottom:16px">
-            <h3>แหล่งค้นหา Candidate</h3>
-            <p class="muted">แอดมินเลือกโหมดต่อกลุ่ม · ค้นอ่านค่าตอนรัน · คีย์ร้านไม่ออกหน้านี้</p>
-            <div class="src-groups" id="src-groups"></div>
-            <p class="muted" id="src-shop-hint"></p>
-            <div class="row">
-              <button class="btn" id="src-settings-save" type="button">บันทึกแหล่ง</button>
+          <div class="set-sheet" id="src-settings" data-ptab-panel="sources">
+            <p class="set-lead muted">เปิดหรือปิดต่อกลุ่ม · LinkedIn กับค้นเว็บต้องมีคีย์ Apify</p>
+            <div class="set-keybar" id="shop-key-box">
+              <div class="set-meta">
+                <strong>คีย์ Apify</strong>
+                <span class="muted" id="src-shop-hint"></span>
+              </div>
+              <div class="set-key-fields">
+                <input id="shop-key" type="password" autocomplete="new-password" spellcheck="false" maxlength="256" placeholder="คีย์ใหม่เพื่อแทนที่ · เว้นว่างคงค่าเดิม" aria-label="คีย์ Apify">
+                <a class="btn ghost" href="https://console.apify.com/settings/integrations" target="_blank" rel="noopener noreferrer">ขอคีย์</a>
+                <button class="btn ghost" type="button" id="shop-key-clear">ลบคีย์ที่เก็บ</button>
+              </div>
             </div>
-            <p class="muted" id="src-settings-msg"></p>
+            <div class="set-list" id="src-groups"></div>
           </div>
-          <div class="panel is-off" id="cal-settings" data-ptab-panel="calendar" hidden style="margin-bottom:16px">
-            <h3>ปฏิทินทีม</h3>
-            <p class="muted">ค่าเริ่มคือแชร์ปฏิทินให้บัญชีทีม — โหมดอื่นเปิดไว้ถ้าทีมใช้หลาย Gmail</p>
-            <label class="radio"><input type="radio" name="cal-mode" value="share" checked> แชร์ปฏิทินให้บัญชีทีม</label>
-            <label class="radio"><input type="radio" name="cal-mode" value="personal"> แต่ละคนเชื่อม Gmail เอง</label>
-            <label class="radio"><input type="radio" name="cal-mode" value="both"> ทั้งสองแบบ</label>
-            <label>เมลล์ที่ถามว่าง (บรรทัดละหนึ่ง)</label>
-            <textarea id="cal-share-emails" rows="4" placeholder="mint@hplus.com"></textarea>
-            <div class="row">
-              <button class="btn" id="cal-settings-save" type="button">บันทึกโหมด</button>
-              <a class="btn ghost" href="/api/schedule/oauth/start?kind=team">เชื่อมบัญชีทีม</a>
-            </div>
-            <p class="muted" id="cal-settings-msg"></p>
+          <div class="set-sheet is-off" id="ai-settings" data-ptab-panel="ai">
+            <p class="set-lead muted">เลือกตัวที่ใช้ · คีย์อยู่ฝั่งเซิร์ฟเวอร์ ไม่โชว์ในเบราว์เซอร์</p>
+            <div class="set-list" id="ai-providers"></div>
           </div>
-          <div id="admin-prompts" class="is-off" data-ptab-panel="prompts" hidden>
-            <h3>Prompt ของระบบ</h3>
-            <p class="muted">เก็บในระบบ ไม่ได้อยู่ใน repo — แก้แล้วใช้รอบถัดไปทันที</p>
-            <div id="prompt-list"></div>
+          <div class="set-sheet is-off" id="cal-settings" data-ptab-panel="calendar">
+            <p class="set-lead muted">ค่าเริ่มคือแชร์ให้บัญชีทีม</p>
+            <div class="set-cal">
+              <div>
+                <p class="src-label">โหมด</p>
+                <div class="seg" role="radiogroup" aria-label="โหมดปฏิทิน">
+                  <label class="seg-opt"><input type="radio" name="cal-mode" value="share" checked><span>แชร์ให้บัญชีทีม</span></label>
+                  <label class="seg-opt"><input type="radio" name="cal-mode" value="personal"><span>แต่ละคนเชื่อมเอง</span></label>
+                  <label class="seg-opt"><input type="radio" name="cal-mode" value="both"><span>ทั้งสองแบบ</span></label>
+                </div>
+              </div>
+              <div>
+                <label for="cal-share-emails">เมลล์ที่ถามว่าง</label>
+                <textarea id="cal-share-emails" rows="6" placeholder="บรรทัดละหนึ่ง เช่น mint@hplus.com"></textarea>
+              </div>
+            </div>
+          </div>
+          <div class="set-sheet is-off" id="admin-prompts" data-ptab-panel="prompts">
+            <p class="set-lead muted">แก้ตัวที่ใช้อยู่ แล้วบันทึก — รอบถัดไปใช้ทันที</p>
+            <div class="set-prompt">
+              <div>
+                <p class="src-label">ตัวที่ใช้</p>
+                <div class="set-picks" id="prompt-nav" role="tablist"></div>
+              </div>
+              <div class="set-prompt-edit">
+                <p class="muted" id="prompt-hint"></p>
+                <textarea id="prompt-text" rows="16" spellcheck="false"></textarea>
+              </div>
+            </div>
           </div>
           </div>
         </section>
       </main>
     </div>
   </div>
-  <script src="/theme.js?v=mira5"></script>
+  <script src="/theme.js?v=lilac1"></script>
+  <dialog class="gap-modal" id="leave-modal">
+    <h3>ยังไม่บันทึกข้อมูล</h3>
+    <p class="muted">ถ้าออกตอนนี้ ข้อมูลที่กรอกจะหาย</p>
+    <div class="row">
+      <button class="btn" type="button" id="leave-stay">อยู่หน้านี้</button>
+      <button class="btn ghost" type="button" id="leave-go">ออกโดยไม่บันทึก</button>
+    </div>
+  </dialog>
+  <dialog class="gap-modal" id="gap-modal">
+    <form method="dialog" id="gap-form">
+      <h3>ข้อมูลจากเรซูเม่ไม่ครบ</h3>
+      <p class="muted">เติมตอนนี้ หรือไปเติมในหน้าผู้สมัครภายหลัง</p>
+      <label for="gap-name">ชื่อ</label>
+      <input id="gap-name" maxlength="160" autocomplete="name">
+      <label for="gap-email">อีเมล</label>
+      <input id="gap-email" type="email" maxlength="200" autocomplete="email">
+      <label for="gap-phone">โทร (ไม่บังคับ)</label>
+      <input id="gap-phone" maxlength="40" autocomplete="tel">
+      <p class="muted" id="gap-msg"></p>
+      <div class="row">
+        <button class="btn" type="submit" id="gap-save">บันทึก</button>
+        <button class="btn ghost" type="button" id="gap-later" value="later">ทีหลัง</button>
+      </div>
+    </form>
+  </dialog>
+  <dialog class="gap-modal" id="ask-modal">
+    <h3 id="ask-title">ยืนยัน</h3>
+    <p class="muted" id="ask-body"></p>
+    <div class="row">
+      <button class="btn ghost" type="button" id="ask-no">ยกเลิก</button>
+      <button class="btn" type="button" id="ask-ok">ตกลง</button>
+    </div>
+  </dialog>
+  <dialog class="gap-modal meet-modal" id="user-modal">
+    <form id="user-form">
+      <p class="eyebrow" id="user-kind">เพิ่มผู้ใช้</p>
+      <h3 id="user-title">บัญชีใหม่</h3>
+      <p class="muted" id="user-sub">ตั้งชื่อ รหัสผ่าน และสิทธิ์</p>
+      <div id="user-create-fields">
+        <label for="user-name">ชื่อผู้ใช้</label>
+        <input id="user-name" autocomplete="off" maxlength="32" spellcheck="false">
+        <label for="user-pass">รหัสผ่าน</label>
+        <input id="user-pass" type="password" placeholder="อย่างน้อย 10 ตัว" autocomplete="new-password" maxlength="200">
+      </div>
+      <div id="user-edit-fields" hidden>
+        <label for="user-pass-new">รหัสผ่านใหม่</label>
+        <input id="user-pass-new" type="password" placeholder="เว้นว่างถ้าไม่เปลี่ยน" autocomplete="new-password" maxlength="200">
+      </div>
+      <label for="user-role">สิทธิ์</label>
+      <select id="user-role">
+        <option value="member">สมาชิก — สรรหาและติดตามผู้สมัคร</option>
+        <option value="admin">ผู้ดูแล — ตั้งค่าและจัดการผู้ใช้</option>
+      </select>
+      <label class="check-line" id="user-disabled-row" hidden>
+        <input type="checkbox" id="user-disabled">
+        ปิดใช้บัญชีนี้
+      </label>
+      <p class="err" id="user-err"></p>
+      <div class="row" id="user-actions">
+        <button class="btn ghost" type="button" id="user-dismiss">ปิด</button>
+        <button class="btn heat" type="button" id="user-delete" hidden>ลบ</button>
+        <button class="btn" type="submit" id="user-save">บันทึก</button>
+      </div>
+    </form>
+  </dialog>
+  <dialog class="gap-modal job-modal" id="job-modal">
+    <form id="job-form" class="job-form tab-scope" data-tabs="always">
+      <div class="job-modal-head">
+        <p class="eyebrow" id="job-kind">ตำแหน่งใหม่</p>
+        <h3 id="job-detail-head">ตำแหน่งใหม่</h3>
+        <p class="muted" id="job-sub">ตั้งชื่อ ความรับผิดชอบ แล้วสร้าง job description</p>
+        <label for="job-edit-title">ชื่อตำแหน่ง</label>
+        <input id="job-edit-title" maxlength="160" placeholder="เช่น Tech Lead / Senior Developer" autocomplete="off">
+      </div>
+      <nav class="page-tabs" id="job-tabs">
+        <button type="button" class="page-tab on" data-ptab="notes">ความรับผิดชอบ</button>
+        <button type="button" class="page-tab" data-ptab="desc">Job description</button>
+        <button type="button" class="page-tab" data-ptab="runs" hidden>รอบค้น</button>
+      </nav>
+      <div class="job-modal-body">
+        <div data-ptab-panel="notes">
+          <textarea id="job-edit-notes" maxlength="12000" placeholder="เช่น ทำ RAG, MCP, hybrid กรุงเทพ" aria-label="ความรับผิดชอบ"></textarea>
+        </div>
+        <div data-ptab-panel="desc" class="is-off">
+          <div class="search-actions">
+            <button class="btn" id="job-draft" type="button">
+              <span class="btn-label">สร้าง job description</span>
+              <span class="btn-wait" aria-hidden="true"><span class="spin"></span>กำลังเขียน…</span>
+            </button>
+          </div>
+          <textarea id="job-edit-desc" maxlength="12000" placeholder="ว่างอยู่ — กดสร้าง หรือวางข้อความเอง" aria-label="Job description"></textarea>
+          <div class="jd-compare" id="job-jd-compare" hidden>
+            <div class="jd-compare-cols">
+              <section>
+                <h4>ของเดิม</h4>
+                <pre class="jd-compare-old" id="job-jd-old" data-skip-dirty></pre>
+              </section>
+              <section>
+                <h4>แบบร่างใหม่</h4>
+                <textarea id="job-jd-draft" maxlength="12000" aria-label="แบบร่าง job description" data-skip-dirty></textarea>
+              </section>
+            </div>
+            <div class="row">
+              <button type="button" class="btn" id="job-jd-keep">ใช้แบบร่าง</button>
+              <button type="button" class="btn ghost" id="job-jd-drop">คงของเดิม</button>
+            </div>
+          </div>
+        </div>
+        <div data-ptab-panel="runs" class="is-off" id="job-runs-box">
+          <ul class="job-runs" id="job-runs"></ul>
+        </div>
+      </div>
+      <div class="job-modal-foot">
+        <p class="muted" id="job-detail-msg" role="status" aria-live="polite"></p>
+        <div class="row" id="job-actions">
+          <button class="btn ghost" type="button" id="job-dismiss">ปิด</button>
+          <button class="btn heat" type="button" id="job-del" hidden>ลบ</button>
+          <button class="btn ghost" type="button" id="job-save">บันทึก</button>
+          <button class="btn ghost" type="button" id="job-results" hidden>ดูผลค้นหา</button>
+          <button class="btn" type="button" id="job-use">ใช้ค้นหา</button>
+        </div>
+      </div>
+    </form>
+  </dialog>
+  <dialog class="gap-modal meet-modal" id="meet-modal">
+    <form id="meet-form">
+      <p class="eyebrow" id="meet-kind">สร้างนัด</p>
+      <h3 id="meet-title"></h3>
+      <p class="muted" id="meet-sub"></p>
+      <div id="meet-create">
+        <label for="book-candidate">ผู้สมัคร</label>
+        <select id="book-candidate" required></select>
+        <label for="book-interviewer">คนสัมภาษณ์</label>
+        <select id="book-interviewer"></select>
+        <label for="book-when">วันเวลา</label>
+        <input id="book-when" type="datetime-local" required>
+        <span class="meet-label">ความยาว</span>
+        <div class="dur" id="dur-pills">
+          <button type="button" data-min="15">15</button>
+          <button type="button" data-min="30">30</button>
+          <button type="button" data-min="45" class="on">45</button>
+          <button type="button" data-min="60">60</button>
+          <button type="button" data-min="90">90</button>
+        </div>
+        <input name="startsAt" type="hidden">
+        <input name="minutes" type="hidden" value="45">
+        <p class="muted" id="meet-link" hidden><a id="meet-link-a" target="_blank" rel="noreferrer">เปิดห้อง Meet</a></p>
+        <p class="err" id="book-err"></p>
+        <div class="row">
+          <button class="btn ghost" type="button" id="meet-dismiss">ปิด</button>
+          <button class="btn heat" type="button" id="meet-info-cancel" hidden>ยกเลิกนัดนี้</button>
+          <button class="btn" type="submit" id="meet-save">ยืนยันนัดนี้</button>
+        </div>
+      </div>
+      <div id="meet-info-confirm" hidden>
+        <p class="meet-confirm">ยกเลิกนัดนี้? ลบออกจากตาราง</p>
+        <div class="row">
+          <button class="btn ghost" type="button" id="meet-info-keep">ไม่ยกเลิก</button>
+          <button class="btn heat" type="button" id="meet-info-drop">ยกเลิกนัด</button>
+        </div>
+      </div>
+    </form>
+  </dialog>
   <nav class="dock" aria-label="เมนูหลัก">
-    <button type="button" data-dock="home" class="on">
+    <a href="/app/" data-dock="home" class="on">
       <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg></span>
       ภาพรวม
-    </button>
-    <button type="button" data-dock="scout">
+    </a>
+    <a href="/app/scout" data-dock="scout">
       <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></span>
       ค้นหา
-    </button>
-    <button type="button" data-dock="screen">
+    </a>
+    <a href="/app/screen" data-dock="screen">
       <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg></span>
       คัดกรอง
-    </button>
-    <button type="button" data-dock="board">
+    </a>
+    <a href="/app/board" data-dock="board">
       <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M8 7v10"/><path d="M16 7v4"/></svg></span>
-      ผู้สมัคร
-    </button>
-    <button type="button" data-dock="schedule">
+      คัมบัง
+    </a>
+    <a href="/app/schedule" data-dock="schedule">
       <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg></span>
       สัมภาษณ์
-    </button>
+    </a>
   </nav>
-  <script src="/app.js?v=mira9"></script>
+  <script src="/app.js?v=mira86"></script>
 </body>
 </html>

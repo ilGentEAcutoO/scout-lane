@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { firstPersonalUrl, isPersonalSite, parseSeeking, thaiSignal, wantsThai } from "../src/modules/scout/engine";
+import { fallbackQuery, firstPersonalUrl, isPersonalSite, looksCjkName, looksLikeMarketing, parseSeeking, thaiSignal, wantsThai } from "../src/modules/scout/engine";
 import {
   classifyHit,
   hasPublicLink,
@@ -125,6 +125,17 @@ describe("scout rank", () => {
       ),
     ).toBe(false);
     expect(hitThai(hit({ displayName: "Ekkawit P.", source: "devhub", headline: "Open to Work" }))).toBe(true);
+    expect(
+      hitThai(
+        hit({
+          displayName: "Somchai Dev",
+          source: "linkedin",
+          location: "Bangkok, Thailand",
+          headline: "Senior Software Engineer",
+          profileUrl: "https://www.linkedin.com/in/somchai-dev",
+        }),
+      ),
+    ).toBe(true);
     const rows = scoreLocally(
       [
         hit({
@@ -145,10 +156,125 @@ describe("scout rank", () => {
     expect(hireableShortlist(rows, 40, "หาคนไทย ภาษาไทย Bangkok").map((row) => row.displayName)).toEqual(["sirn"]);
     expect(
       hireableShortlist(rows, 40, "Tech Lead Bangkok TypeScript", "thai").map((row) => row.displayName),
-    ).toEqual(["sirn"]);
+    ).toEqual(["sirn", "ammmir"]);
     expect(
       hireableShortlist(rows, 40, "Tech Lead Bangkok TypeScript", "foreign").map((row) => row.displayName),
     ).toEqual(["ammmir"]);
+  });
+
+  it("keeps marketing people when the JD is marketing", () => {
+    const rows = scoreLocally(
+      [
+        hit({
+          displayName: "Nicha Brand",
+          source: "linkedin",
+          location: "Bangkok, Thailand",
+          headline: "Marketing Manager · Brand Campaigns · Open to Work",
+          profileUrl: "https://www.linkedin.com/in/nicha-brand",
+        }),
+        hit({
+          displayName: "Somchai Dev",
+          source: "github",
+          location: "Bangkok",
+          headline: "Senior Software Engineer · React Node",
+          profileUrl: "https://github.com/somchai",
+        }),
+      ],
+      "หาทีมการตลาด Brand Content Campaign กรุงเทพ",
+    );
+    expect(looksLikeMarketing("หาทีมการตลาด Brand Content")).toBe(true);
+    expect(
+      hireableShortlist(rows, 40, "หาทีมการตลาด Brand Content Campaign กรุงเทพ", "thai").map(
+        (row) => row.displayName,
+      ),
+    ).toEqual(["Nicha Brand", "Somchai Dev"]);
+    const lookingDev = scoreLocally(
+      [
+        hit({
+          displayName: "Ekkawit P.",
+          source: "devhub",
+          location: "Thailand",
+          headline: "Full Stack · Senior · Open to Work",
+          profileUrl: "https://devhub.in.th/en/developers/lexthai24/",
+        }),
+        hit({
+          displayName: "Nicha Brand",
+          source: "linkedin",
+          location: "Bangkok, Thailand",
+          headline: "Marketing Manager · Brand Campaigns · Open to Work",
+          profileUrl: "https://www.linkedin.com/in/nicha-brand",
+        }),
+      ],
+      "หาทีมการตลาด Brand Content Campaign กรุงเทพ",
+    );
+    expect(
+      hireableShortlist(lookingDev, 40, "หาทีมการตลาด Brand Content Campaign กรุงเทพ", "thai").map(
+        (row) => row.displayName,
+      ),
+    ).toEqual(["Nicha Brand", "Ekkawit P."]);
+  });
+
+  it("drops CJK LinkedIn names even when the location is Bangkok", () => {
+    expect(looksCjkName("淑婷 刘")).toBe(true);
+    expect(looksCjkName("Nicha Srisuk")).toBe(false);
+    const rows = scoreLocally(
+      [
+        hit({
+          displayName: "淑婷 刘",
+          source: "linkedin",
+          location: "Bangkok, Thailand",
+          headline: "Marketing Manager",
+          profileUrl: "https://www.linkedin.com/in/liu-wei",
+        }),
+        hit({
+          displayName: "Nicha Srisuk",
+          source: "linkedin",
+          location: "Bangkok, Thailand",
+          headline: "Brand Manager",
+          profileUrl: "https://www.linkedin.com/in/nicha-srisuk",
+        }),
+      ],
+      "Brand Manager คนไทย กรุงเทพ",
+    );
+    expect(hireableShortlist(rows, 40, "Brand Manager คนไทย กรุงเทพ", "thai").map((row) => row.displayName)).toEqual([
+      "Nicha Srisuk",
+    ]);
+  });
+
+  it("keeps LinkedIn Short cards even when the headline is thin", () => {
+    const card = hit({
+      displayName: "Nicha S.",
+      source: "linkedin",
+      location: null,
+      headline: "",
+      profileUrl: "https://www.linkedin.com/in/nicha-s",
+    });
+    expect(isJobCandidate(card, "หาทีมการตลาด Brand กรุงเทพ", "thai")).toBe(true);
+  });
+
+  it("keeps Apify LinkedIn people on the Thai shortlist", () => {
+    const rows = scoreLocally(
+      [
+        hit({
+          displayName: "Somchai Dev",
+          source: "linkedin",
+          location: "Bangkok, Thailand",
+          headline: "Senior Software Engineer · React Node",
+          profileUrl: "https://www.linkedin.com/in/somchai-dev",
+        }),
+        hit({
+          displayName: "Alex Smith",
+          source: "github",
+          location: "Berlin",
+          headline: "TypeScript React",
+          profileUrl: "https://github.com/alexsmith",
+        }),
+      ],
+      "Tech Lead Bangkok TypeScript",
+    );
+    expect(
+      hireableShortlist(rows, 40, "Tech Lead Bangkok TypeScript", "thai").map((row) => row.displayName),
+    ).toEqual(["Somchai Dev"]);
   });
 
   it("puts SEEKING WORK + RAG above a Bangkok stack with no looking signal", () => {
@@ -181,6 +307,13 @@ describe("scout rank", () => {
     expect(names[0]).toBe("Genego");
     expect(names.indexOf("Kawin")).toBeGreaterThan(names.indexOf("Genego"));
     expect(peopleForModel(rows).map((row) => row.displayName)[0]).toBe("Genego");
+  });
+
+  it("builds a fallback query from the JD instead of defaulting to TypeScript", () => {
+    expect(fallbackQuery("หาทีมการตลาด Brand Content Campaign กรุงเทพ")).toMatch(/marketing|brand|content|การตลาด/i);
+    expect(fallbackQuery("หาทีมการตลาด Brand Content Campaign กรุงเทพ")).toMatch(/Bangkok/i);
+    expect(fallbackQuery("หาทีมการตลาด Brand Content Campaign กรุงเทพ")).not.toMatch(/TypeScript/i);
+    expect(fallbackQuery("Tech Lead RAG MCP TypeScript Bangkok")).toMatch(/RAG|MCP|typescript/i);
   });
 
   it("picks personal portfolio URLs and ignores GitHub/LinkedIn", () => {

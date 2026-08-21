@@ -10,11 +10,14 @@ import {
   createUserSchema,
   deleteUser,
   interviewSchema,
+  jobGenerateSchema,
+  jobPatchSchema,
   jobSchema,
   LIMITS,
   listUsers,
   parseBody,
   patchUserSchema,
+  PROMPT_KEYS,
   promptSaveSchema,
   STAGES,
   type AccessPrincipal,
@@ -24,56 +27,33 @@ import {
 } from "@scout-lane/core";
 import { clientIp, limit } from "./rate";
 import { glmJson } from "./glm";
+import { listPrompts, savePrompt } from "../../web/src/llm/settings";
 import { officialSearchUrls } from "../../web/src/modules/scout/links";
 import { buildSourceLanes, sourceLabel } from "../../web/src/modules/scout/catalog";
-import {
-  hireableShortlist,
-  hitThai,
-  overlayModelScores,
-  peopleForModel,
-  scoreLocally,
-} from "../../web/src/modules/scout/rank";
 import { githubAdapter } from "../../web/src/modules/scout/github";
-import { gitlabAdapter, huggingfaceAdapter, npmAdapter } from "../../web/src/modules/scout/public";
+import { gitlabAdapter } from "../../web/src/modules/scout/public";
 import { devhubAdapter } from "../../web/src/modules/scout/devhub";
-import { devtoAdapter, githubReposAdapter, hnAdapter, redditAdapter } from "../../web/src/modules/scout/extra";
+import { devtoAdapter, hnAdapter } from "../../web/src/modules/scout/extra";
+import { githubThailandAdapter, stackoverflowAdapter } from "../../web/src/modules/scout/deep";
+import { githubBangkokAdapter } from "../../web/src/modules/scout/wave";
 import {
-  cratesAdapter,
-  githubThailandAdapter,
-  hfSpacesAdapter,
-  pypiAdapter,
-  rubygemsAdapter,
-  stackoverflowAdapter,
-} from "../../web/src/modules/scout/deep";
-import {
-  dblpAdapter,
-  githubBangkokAdapter,
-  githubLangchainAdapter,
-  gitlabProjectsAdapter,
-  hexAdapter,
-  hfForumAdapter,
-  lobstersAdapter,
-  openalexAdapter,
-  openaiForumAdapter,
-  openvsxAdapter,
-  packagistAdapter,
-  pubdevAdapter,
-  s2Adapter,
-  stackAiAdapter,
-  stackDsAdapter,
-} from "../../web/src/modules/scout/wave";
-import {
-  facebookAdapter,
   jobbkkAdapter,
   jobsdbAdapter,
   jobthaiAdapter,
   linkedinAdapter,
 } from "../../web/src/modules/scout/policy";
 import { apifyWebAdapter } from "../../web/src/modules/scout/apify";
-import { CANDIDATE_SOURCES } from "../../web/src/modules/scout/engine";
 import { readyAdapters } from "../../web/src/modules/scout/modes";
 import { getPrompt } from "../../web/src/llm/settings";
-import { SEED_ROLE } from "../../web/src/modules/jobs";
+import { SEED_ROLE, ensureJob } from "../../web/src/modules/jobs";
+import {
+  cancelOtherScoutJobs,
+  hashScoutKey,
+  latestScoutJob,
+  stepNext,
+  type ScoutQueueJob,
+} from "../../web/src/modules/scout/task";
+import { listAiStatus } from "../../web/src/llm/providers";
 import { slotsOverlap } from "../../web/src/do/overlap";
 import { logTrail, listTrail } from "../../web/src/trail";
 import { createMeet, googleConfigured } from "../../web/src/modules/schedule/google";
@@ -89,10 +69,10 @@ const liveAdapters = [
   stackoverflowAdapter,
   apifyWebAdapter,
 ];
-const policyAdapters = [linkedinAdapter, facebookAdapter, jobsdbAdapter, jobthaiAdapter, jobbkkAdapter];
+const policyAdapters = [linkedinAdapter, jobsdbAdapter, jobthaiAdapter, jobbkkAdapter];
 
 function mcpAdapterList() {
-  return [...liveAdapters, ...policyAdapters];
+  return [linkedinAdapter, apifyWebAdapter, ...liveAdapters.filter((row) => row.id !== "apify_web"), ...policyAdapters.filter((row) => row.id !== "linkedin")];
 }
 
 export function buildServer(env: Env, user: AccessPrincipal, request: Request): McpServer {
@@ -134,6 +114,10 @@ export function buildServer(env: Env, user: AccessPrincipal, request: Request): 
           can: capabilities(user.role),
           limits: LIMITS,
           aiGateway: env.CF_AI_GATEWAY_ID || "scoutlane-ai-gateway",
+          queues: {
+            scout: "scout_search returns queued. Poll get_scout_status with runId until done.",
+            screen: "screen_resume with text returns ready. PDF-style jobs use get_screen_status.",
+          },
         },
         null,
         2,
@@ -142,7 +126,9 @@ export function buildServer(env: Env, user: AccessPrincipal, request: Request): 
   );
 
   add("list_jobs", "jobs.read", { description: "List job descriptions", inputSchema: {} }, async () => {
-    const rows = await env.DB_MAIN.prepare("SELECT id, title, created_at FROM jobs ORDER BY created_at DESC").all();
+    const rows = await env.DB_MAIN.prepare(
+      "SELECT id, title, created_at, last_run_at, last_hit_count FROM jobs ORDER BY COALESCE(last_run_at, created_at) DESC",
+    ).all();
     return rows.results ?? [];
   });
 
@@ -183,6 +169,97 @@ export function buildServer(env: Env, user: AccessPrincipal, request: Request): 
       return { id };
     },
     true,
+  );
+
+  add(
+    "update_job",
+    "jobs.write",
+    {
+      description: "Update a job title, description, or notes",
+      inputSchema: {
+        id: z.string().uuid(),
+        title: z.string().trim().min(LIMITS.jobTitleMin).max(LIMITS.jobTitleMax).optional(),
+        description: z.string().trim().min(LIMITS.jobDescMin).max(LIMITS.jobDescMax).optional(),
+        notes: z.string().trim().max(LIMITS.jdMax).optional(),
+      },
+    },
+    async (args) => {
+      const id = parseBody(uuidSchema, args.id);
+      const body = parseBody(jobPatchSchema, {
+        title: args.title,
+        description: args.description,
+        notes: args.notes,
+      });
+      const current = await env.DB_MAIN.prepare("SELECT id, title, description, notes FROM jobs WHERE id = ?")
+        .bind(id)
+        .first<{ id: string; title: string; description: string; notes: string | null }>();
+      if (!current) throw new Error("not_found");
+      await env.DB_MAIN.prepare("UPDATE jobs SET title = ?, description = ?, notes = ? WHERE id = ?")
+        .bind(body.title ?? current.title, body.description ?? current.description, body.notes ?? current.notes ?? "", id)
+        .run();
+      return { ok: true, id };
+    },
+    true,
+  );
+
+  add(
+    "delete_job",
+    "jobs.write",
+    { description: "Delete a job and its shortlist (candidates stay in the pipeline)", inputSchema: { id: z.string().uuid() } },
+    async (args) => {
+      const id = parseBody(uuidSchema, args.id);
+      const exists = await env.DB_MAIN.prepare("SELECT id FROM jobs WHERE id = ?").bind(id).first();
+      if (!exists) throw new Error("not_found");
+      await env.DB_MAIN.batch([
+        env.DB_MAIN.prepare("DELETE FROM scout_runs WHERE job_id = ?").bind(id),
+        env.DB_MAIN.prepare("DELETE FROM shortlist WHERE job_id = ?").bind(id),
+        env.DB_MAIN.prepare("DELETE FROM jobs WHERE id = ?").bind(id),
+      ]);
+      return { ok: true, id };
+    },
+    true,
+  );
+
+  add(
+    "list_shortlist",
+    "scout.run",
+    {
+      description: "List the latest scout shortlist, optionally for one job",
+      inputSchema: { jobId: z.string().uuid().optional() },
+    },
+    async (args) => {
+      let jobId = args.jobId ? parseBody(uuidSchema, args.jobId) : "";
+      if (!jobId) {
+        const latest = await env.DB_MAIN.prepare(
+          "SELECT job_id FROM shortlist ORDER BY created_at DESC LIMIT 1",
+        ).first<{ job_id: string }>();
+        jobId = latest?.job_id ?? "";
+      }
+      if (!jobId) return { jobId: null, shortlist: [] };
+      const job = await env.DB_MAIN.prepare("SELECT id, title FROM jobs WHERE id = ?")
+        .bind(jobId)
+        .first<{ id: string; title: string }>();
+      const rows = await env.DB_MAIN.prepare(
+        `SELECT id, source, external_id, display_name, headline, profile_url, location, reason, fit_score, approved
+         FROM shortlist WHERE job_id = ? ORDER BY COALESCE(fit_score, -1) DESC, display_name`,
+      )
+        .bind(jobId)
+        .all();
+      return { jobId, title: job?.title ?? null, shortlist: rows.results ?? [] };
+    },
+  );
+
+  add(
+    "list_source_settings",
+    "settings.read",
+    { description: "Read scout source group modes (same as Settings → แหล่ง)", inputSchema: {} },
+    async () => {
+      const { ready, modes } = await readyAdapters(env, mcpAdapterList());
+      return {
+        modes,
+        sources: ready.map((a) => ({ id: a.id, status: a.status, label: sourceLabel(a.id) })),
+      };
+    },
   );
 
   add(
@@ -503,6 +580,64 @@ export function buildServer(env: Env, user: AccessPrincipal, request: Request): 
   );
 
   add(
+    "update_interview",
+    "interviews.write",
+    {
+      description: "Reschedule or reassign an interview",
+      inputSchema: {
+        id: z.string().uuid(),
+        startsAt: z.string().min(10).max(40).optional(),
+        minutes: z.number().int().min(LIMITS.interviewMinutesMin).max(LIMITS.interviewMinutesMax).optional(),
+        candidateId: z.string().uuid().optional(),
+      },
+    },
+    async (args) => {
+      const id = parseBody(uuidSchema, args.id);
+      const row = await env.DB_MAIN.prepare(
+        "SELECT id, candidate_id, starts_at, minutes FROM interviews WHERE id = ?",
+      )
+        .bind(id)
+        .first<{ id: string; candidate_id: string; starts_at: string; minutes: number | null }>();
+      if (!row) throw new Error("not_found");
+      const candidateId = args.candidateId ? parseBody(uuidSchema, args.candidateId) : row.candidate_id;
+      const startsAt = args.startsAt ? String(args.startsAt) : row.starts_at;
+      const minutes = typeof args.minutes === "number" ? args.minutes : row.minutes ?? 45;
+      const start = Date.parse(startsAt);
+      if (Number.isNaN(start)) throw new Error("invalid_time");
+      const end = start + minutes * 60_000;
+      const existing = ((
+        await env.DB_MAIN.prepare("SELECT id, starts_at, minutes FROM interviews WHERE id != ?").bind(id).all()
+      ).results ?? []) as Array<{ starts_at: string; minutes: number | null }>;
+      const clash = existing.some((item) => {
+        const bStart = Date.parse(item.starts_at);
+        return !Number.isNaN(bStart) && slotsOverlap(start, end, bStart, bStart + (item.minutes || 45) * 60_000);
+      });
+      if (clash) throw new Error("conflict");
+      const startIso = new Date(start).toISOString();
+      await env.DB_MAIN.prepare(
+        "UPDATE interviews SET candidate_id = ?, starts_at = ?, minutes = ? WHERE id = ?",
+      )
+        .bind(candidateId, startIso, minutes, id)
+        .run();
+      if (candidateId !== row.candidate_id) {
+        await env.DB_MAIN.prepare(
+          "UPDATE candidates SET stage = 'prescreen' WHERE id = ? AND stage = 'interview'",
+        )
+          .bind(row.candidate_id)
+          .run();
+        await env.DB_MAIN.prepare(
+          "UPDATE candidates SET stage = 'interview' WHERE id = ? AND stage IN ('applied','screening','prescreen')",
+        )
+          .bind(candidateId)
+          .run();
+      }
+      await logTrail(env.DB_MAIN, candidateId, "rescheduled", { stage: "interview", detail: startIso });
+      return { id, startsAt: startIso, minutes };
+    },
+    true,
+  );
+
+  add(
     "cancel_interview",
     "interviews.write",
     { description: "Cancel a booked interview", inputSchema: { id: z.string().uuid() } },
@@ -616,87 +751,147 @@ export function buildServer(env: Env, user: AccessPrincipal, request: Request): 
     "scout_search",
     "scout.run",
     {
-      description: "Search public profiles from a job description, rank them, and keep a shortlist like the UI",
+      description:
+        "Queue a scout search like the UI. Returns status=queued immediately. Call get_scout_status with runId until status is done or failed.",
       inputSchema: {
         jd: z.string().trim().min(LIMITS.jdMin).max(LIMITS.jdMax),
         title: z.string().trim().min(LIMITS.jobTitleMin).max(LIMITS.jobTitleMax).optional(),
         jobId: z.string().uuid().optional(),
-        origin: z.enum(["any", "thai", "foreign"]).optional(),
       },
     },
     async (args) => {
       const jd = String(args.jd);
-      let jobId = args.jobId ? parseBody(uuidSchema, args.jobId) : crypto.randomUUID();
-      if (!args.jobId) {
-        await env.DB_MAIN.prepare("INSERT INTO jobs (id, title, description) VALUES (?, ?, ?)")
-          .bind(jobId, String(args.title || "Open role"), jd)
-          .run();
-      }
-      const queryPrompt = await getPrompt(lane, "prompt.scout_query");
-      const planned = await glmJson<{ query: string }>(env, [
-        { role: "system", content: queryPrompt },
-        { role: "user", content: jd },
-      ]);
-      const query = planned.query || "TypeScript MCP location:Bangkok";
-      const { ready, modes } = await readyAdapters(env, mcpAdapterList());
-      const live = ready.filter((a) => a.status === "live" && CANDIDATE_SOURCES.has(a.id));
-      const batches = await Promise.all(live.map((a) => a.search(query, lane).catch(() => [])));
-      const hits = batches
-        .flat()
-        .filter((hit) => hitThai(hit))
-        .slice(0, 140);
-      const local = scoreLocally(hits, jd);
-      const forModel = peopleForModel(hits);
-      const rankPrompt = await getPrompt(lane, "prompt.scout_rank");
-      let ranked: { items: Array<{ externalId: string; fitScore: number; reason: string }> } = { items: [] };
-      if (forModel.length) {
-        try {
-          ranked = await glmJson<{ items: Array<{ externalId: string; fitScore: number; reason: string }> }>(env, [
-            { role: "system", content: rankPrompt },
-            { role: "user", content: JSON.stringify({ jd: jd.slice(0, 4000), candidates: forModel }) },
-          ]);
-        } catch {
-          ranked = { items: [] };
-        }
-      }
-      const origin = "thai";
-      const scored = hireableShortlist(overlayModelScores(local, ranked.items), undefined, jd, origin);
-      const shortlist = [];
-      for (const hit of scored) {
-        const id = crypto.randomUUID();
-        await env.DB_MAIN.prepare(
-          `INSERT INTO shortlist
-            (id, job_id, source, external_id, display_name, headline, profile_url, location, reason, fit_score)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        )
-          .bind(
-            id,
-            jobId,
-            hit.source,
-            hit.externalId,
-            hit.displayName,
-            hit.headline,
-            hit.profileUrl,
-            hit.location,
-            hit.reason,
-            hit.fitScore,
-          )
-          .run();
-        shortlist.push({
-          id,
-          ...hit,
+      const title = String(args.title || "Open role");
+      const saved = await ensureJob(env.DB_MAIN, {
+        id: args.jobId ? parseBody(uuidSchema, args.jobId) : undefined,
+        title,
+        description: jd,
+      });
+      const jobId = saved.id;
+      const { modes } = await readyAdapters(env, mcpAdapterList());
+      const jdHash = await hashScoutKey(title, jd, modes);
+      const current = await latestScoutJob(env.DB_MAIN, jobId);
+      if (current && (current.status === "queued" || current.status === "running") && current.jd_hash === jdHash) {
+        return queuedReport("get_scout_status", {
+          runId: current.id,
+          jobId,
+          status: current.status,
+          reused: true,
+          message: current.status === "running" ? "กำลังค้นอยู่ เรียก get_scout_status อีกครั้ง" : "อยู่ในคิวแล้ว เรียก get_scout_status อีกครั้ง",
         });
       }
-      return {
+      const runId = crypto.randomUUID();
+      const queuedLog = JSON.stringify([
+        {
+          state: "run",
+          step: "query",
+          via: "queue",
+          message: "เข้าคิวแล้ว · รอตัวดึงเริ่มงาน",
+          next: stepNext("query"),
+        },
+      ]);
+      await env.DB_MAIN.prepare(
+        `INSERT INTO scout_jobs (id, job_id, jd_hash, status, step, log) VALUES (?, ?, ?, 'queued', 'query', ?)`,
+      )
+        .bind(runId, jobId, jdHash, queuedLog)
+        .run();
+      await cancelOtherScoutJobs(env.DB_MAIN, jobId, runId);
+      await env.SCOUT_QUEUE.send({
+        runId,
         jobId,
-        query,
-        shortlist,
-        links: officialSearchUrls(query),
-        ...buildSourceLanes({ adapters: ready, links: officialSearchUrls(query), modes }),
-        sources: ready.map((a) => ({ id: a.id, status: a.status, label: sourceLabel(a.id) })),
-      };
+        title,
+        jd,
+        jdHash,
+        modes,
+      } satisfies ScoutQueueJob);
+      return queuedReport("get_scout_status", {
+        runId,
+        jobId,
+        status: "queued",
+        pollAfterSeconds: 4,
+        message: "เข้าคิวแล้ว รอสักครู่แล้วเรียก get_scout_status ด้วย runId นี้",
+      });
     },
     true,
+  );
+
+  add(
+    "get_scout_status",
+    "scout.run",
+    {
+      description:
+        "Read scout run status and results. If status is queued or running, wait and call again. When done, shortlist is included.",
+      inputSchema: {
+        runId: z.string().uuid().optional(),
+        jobId: z.string().uuid().optional(),
+      },
+    },
+    async (args) => {
+      const runId = args.runId ? parseBody(uuidSchema, args.runId) : "";
+      const jobId = args.jobId ? parseBody(uuidSchema, args.jobId) : "";
+      const run = runId
+        ? await env.DB_MAIN.prepare(
+            `SELECT id, job_id, jd_hash, status, step, query, log, hit_count, error, updated_at
+             FROM scout_jobs WHERE id = ?`,
+          )
+            .bind(runId)
+            .first<{
+              id: string;
+              job_id: string;
+              status: string;
+              step: string | null;
+              query: string | null;
+              log: string;
+              hit_count: number;
+              error: string | null;
+            }>()
+        : jobId
+          ? await latestScoutJob(env.DB_MAIN, jobId)
+          : null;
+      if (!run) return { status: "not_found", message: "ยังไม่พบรอบค้น เรียก scout_search ก่อน" };
+      let log: unknown[] = [];
+      try {
+        log = JSON.parse(run.log || "[]") as unknown[];
+      } catch {
+        log = [];
+      }
+      if (run.status === "queued" || run.status === "running") {
+        return queuedReport("get_scout_status", {
+          runId: run.id,
+          jobId: run.job_id,
+          status: run.status,
+          step: run.step,
+          query: run.query,
+          log,
+          pollAfterSeconds: 4,
+          message:
+            run.status === "running"
+              ? `กำลังค้น (${run.step || "fetch"}) เรียก get_scout_status อีกครั้ง`
+              : "ยังอยู่ในคิว เรียก get_scout_status อีกครั้ง",
+        });
+      }
+      const rows = await env.DB_MAIN.prepare(
+        `SELECT id, source, external_id, display_name, headline, profile_url, location, reason, fit_score, approved
+         FROM shortlist WHERE job_id = ? ORDER BY COALESCE(fit_score, -1) DESC, display_name`,
+      )
+        .bind(run.job_id)
+        .all();
+      return {
+        status: run.status,
+        runId: run.id,
+        jobId: run.job_id,
+        query: run.query,
+        hitCount: run.hit_count,
+        error: run.error,
+        log,
+        shortlist: rows.results ?? [],
+        message:
+          run.status === "done"
+            ? "ค้นเสร็จแล้ว ใช้ approve_scout กับ id ใน shortlist เพื่อบันทึกเป็นผู้สมัคร"
+            : run.error || "ค้นไม่สำเร็จ",
+        poll: false,
+      };
+    },
   );
 
   add(
@@ -740,7 +935,8 @@ export function buildServer(env: Env, user: AccessPrincipal, request: Request): 
     "screen_resume",
     "screen.run",
     {
-      description: "Score resume text against a job id. Same scorecard as the UI (skills/experience/culture + reasons).",
+      description:
+        "Score resume text against a job, same scorecard as the UI. Returns status=ready when finished. If status=queued, call get_screen_status.",
       inputSchema: {
         jobId: z.string().uuid(),
         name: z.string().trim().min(LIMITS.candidateNameMin).max(LIMITS.candidateNameMax),
@@ -808,9 +1004,55 @@ export function buildServer(env: Env, user: AccessPrincipal, request: Request): 
         from: "applied",
         detail: [scored.skills, scored.experience, scored.culture].join("/"),
       });
-      return { applicationId, candidateId, status: "ready", ...scored };
+      return {
+        status: "ready",
+        poll: false,
+        message: "คัดกรองเสร็จแล้ว",
+        applicationId,
+        candidateId,
+        ...scored,
+      };
     },
     true,
+  );
+
+  add(
+    "get_screen_status",
+    "screen.run",
+    {
+      description:
+        "Read resume screening status. If queued, wait and call again. When ready, includes the scorecard.",
+      inputSchema: { applicationId: z.string().uuid() },
+    },
+    async (args) => {
+      const id = parseBody(uuidSchema, args.applicationId);
+      const row = await env.DB_MAIN.prepare(
+        `SELECT a.*, c.display_name, c.email, j.title AS job_title
+         FROM applications a
+         JOIN candidates c ON c.id = a.candidate_id
+         JOIN jobs j ON j.id = a.job_id
+         WHERE a.id = ?`,
+      )
+        .bind(id)
+        .first<Record<string, unknown>>();
+      if (!row) return { status: "not_found", message: "ไม่พบใบคัดกรองนี้" };
+      const status = String(row.status || "");
+      if (status === "queued" || status === "running") {
+        return queuedReport("get_screen_status", {
+          applicationId: id,
+          status,
+          lastStep: row.last_step,
+          pollAfterSeconds: 3,
+          message: "ยังคัดกรองไม่เสร็จ เรียก get_screen_status อีกครั้ง",
+        });
+      }
+      return {
+        status,
+        poll: false,
+        message: status === "ready" ? "คัดกรองเสร็จแล้ว" : row.last_error || "คัดกรองไม่สำเร็จ",
+        application: decodeApplication(row),
+      };
+    },
   );
 
   add(
@@ -869,9 +1111,52 @@ export function buildServer(env: Env, user: AccessPrincipal, request: Request): 
     true,
   );
 
+  add("get_ai_status", "settings.read", { description: "Which LLM providers have keys (never returns the keys)", inputSchema: {} }, async () => {
+    return listAiStatus(env);
+  });
+
+  add("get_schedule_status", "interviews.read", { description: "Whether Google Calendar is connected", inputSchema: {} }, async () => {
+    return { google: googleConfigured(lane) };
+  });
+
+  add(
+    "generate_job_description",
+    "jobs.write",
+    {
+      description: "Draft a job description from a title and notes, then save the job (same as UI generate)",
+      inputSchema: {
+        title: z.string().trim().min(LIMITS.jobTitleMin).max(LIMITS.jobTitleMax),
+        notes: z.string().trim().min(LIMITS.jdMin).max(LIMITS.jdMax),
+        jobId: z.string().uuid().optional(),
+      },
+    },
+    async (args) => {
+      const body = parseBody(jobGenerateSchema, {
+        title: args.title,
+        notes: args.notes,
+        jobId: args.jobId,
+      });
+      const prompt = await getPrompt(lane, "prompt.job_draft");
+      const drafted = await glmJson<{ title?: string; description?: string }>(env, [
+        { role: "system", content: prompt },
+        { role: "user", content: JSON.stringify({ title: body.title, notes: body.notes }) },
+      ]);
+      const title = (drafted.title || body.title).trim().slice(0, 160);
+      const description = (drafted.description || "").trim();
+      if (description.length < 10) throw new Error("llm_bad_json");
+      const saved = await ensureJob(env.DB_MAIN, {
+        id: body.jobId,
+        title,
+        description,
+        notes: body.notes,
+      });
+      return { status: "ready", poll: false, jobId: saved.id, title, description, created: saved.created };
+    },
+    true,
+  );
+
   add("list_prompts", "settings.read", { description: "List AI prompt settings (admin)", inputSchema: {} }, async () => {
-    const rows = await env.DB_MAIN.prepare("SELECT key, value FROM settings").all();
-    return rows.results ?? [];
+    return { prompts: await listPrompts(env) };
   });
 
   add(
@@ -880,17 +1165,13 @@ export function buildServer(env: Env, user: AccessPrincipal, request: Request): 
     {
       description: "Save an AI prompt setting (admin)",
       inputSchema: {
-        key: z.enum(["prompt.scout_query", "prompt.scout_rank", "prompt.screen", "prompt.interview_pack"]),
+        key: z.enum(PROMPT_KEYS),
         value: z.string().min(LIMITS.promptMin).max(LIMITS.promptMax),
       },
     },
     async (args) => {
       const body = parseBody(promptSaveSchema, args);
-      await env.DB_MAIN.prepare(
-        "INSERT INTO settings (key, value, updated_at) VALUES (?, ?, datetime('now')) ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at",
-      )
-        .bind(body.key, body.value)
-        .run();
+      await savePrompt(env, body.key, body.value);
       return { ok: true };
     },
     true,
@@ -935,6 +1216,15 @@ function addDays(isoDate: string, days: number): string {
 
 function bangkokIso(date: string, hour: number): string {
   return `${date}T${String(hour).padStart(2, "0")}:00:00+07:00`;
+}
+
+function queuedReport(pollTool: string, body: Record<string, unknown>) {
+  return {
+    poll: true,
+    pollTool,
+    pollAfterSeconds: body.pollAfterSeconds ?? 4,
+    ...body,
+  };
 }
 
 function text(value: string) {

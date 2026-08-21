@@ -1,8 +1,8 @@
 import { Hono } from "hono";
 import {
   candidateCreateSchema,
+  candidateListQuerySchema,
   candidatePatchSchema,
-  LIMITS,
   parseBody,
   STAGES,
   uuidSchema,
@@ -18,16 +18,42 @@ export const track = new Hono<{ Bindings: Env }>();
 track.get("/api/candidates", async (c) => {
   const actor = await requireActor(c.req.raw, c.env);
   requirePerm(actor, "candidates.read");
-  const stage = c.req.query("stage");
-  const source = c.req.query("source");
-  const jobId = c.req.query("jobId");
-  if (stage && !(STAGES as readonly string[]).includes(stage)) {
-    throw new HttpError(400, "invalid_stage");
-  }
-  if (source && source.length > LIMITS.sourceMax) throw new HttpError(400, "invalid_source");
-  if (jobId) parseBody(uuidSchema, jobId);
+  const url = new URL(c.req.url);
+  const parsed = parseBody(candidateListQuerySchema, {
+    q: url.searchParams.get("q") ?? "",
+    stage: url.searchParams.get("stage") || undefined,
+    source: url.searchParams.get("source") || undefined,
+    jobId: url.searchParams.get("jobId") || undefined,
+    page: url.searchParams.get("page") || 1,
+    pageSize: url.searchParams.get("pageSize") || 20,
+  });
+  const stage = parsed.stage && (STAGES as readonly string[]).includes(parsed.stage) ? parsed.stage : undefined;
+  const source = parsed.source;
+  const jobId = parsed.jobId;
+  const needle = parsed.q ? `%${parsed.q.replace(/[%_]/g, "")}%` : null;
+  const offset = (parsed.page - 1) * parsed.pageSize;
 
-  let sql = `SELECT c.id, c.display_name, c.email, c.phone, c.source, c.stage, c.profile_url, c.headline, c.job_id, c.created_at,
+  let where = " WHERE 1=1";
+  const binds: Array<string | number> = [];
+  if (stage) {
+    where += " AND c.stage = ?";
+    binds.push(stage);
+  }
+  if (source) {
+    where += " AND c.source = ?";
+    binds.push(source);
+  }
+  if (jobId) {
+    where += " AND c.job_id = ?";
+    binds.push(jobId);
+  }
+  if (needle) {
+    where += " AND (c.display_name LIKE ? OR ifnull(c.email,'') LIKE ? OR ifnull(c.phone,'') LIKE ?)";
+    binds.push(needle, needle, needle);
+  }
+
+  const countSql = `SELECT COUNT(*) AS n FROM candidates c${where}`;
+  const listSql = `SELECT c.id, c.display_name, c.email, c.phone, c.source, c.stage, c.profile_url, c.headline, c.job_id, c.created_at,
     j.title AS job_title,
     a.skills_score, a.experience_score, a.culture_score, a.status AS screen_status, a.summary
     FROM candidates c
@@ -35,28 +61,18 @@ track.get("/api/candidates", async (c) => {
     LEFT JOIN applications a ON a.id = (
       SELECT id FROM applications WHERE candidate_id = c.id ORDER BY created_at DESC LIMIT 1
     )
-    WHERE 1=1`;
-  const binds: string[] = [];
-  if (stage) {
-    sql += " AND c.stage = ?";
-    binds.push(stage);
-  }
-  if (source) {
-    sql += " AND c.source = ?";
-    binds.push(source);
-  }
-  if (jobId) {
-    sql += " AND c.job_id = ?";
-    binds.push(jobId);
-  }
-  sql += " ORDER BY c.created_at DESC LIMIT 200";
+    ${where}
+    ORDER BY c.created_at DESC LIMIT ? OFFSET ?`;
 
-  const stmt = c.env.DB_MAIN.prepare(sql);
-  const rows = binds.length ? await stmt.bind(...binds).all() : await stmt.all();
+  const countRow = binds.length
+    ? await c.env.DB_MAIN.prepare(countSql).bind(...binds).first<{ n: number }>()
+    : await c.env.DB_MAIN.prepare(countSql).first<{ n: number }>();
+  const listBinds = [...binds, parsed.pageSize, offset];
+  const rows = await c.env.DB_MAIN.prepare(listSql).bind(...listBinds).all();
   const candidates = (rows.results ?? []) as Array<{ id: string }>;
   const events = await listTrailFor(
     c.env.DB_MAIN,
-    candidates.map((c) => c.id),
+    candidates.map((row) => row.id),
   );
   const byId = new Map<string, unknown[]>();
   for (const ev of events as Array<{ candidate_id: string }>) {
@@ -65,8 +81,12 @@ track.get("/api/candidates", async (c) => {
     byId.set(ev.candidate_id, list);
   }
   return c.json({
-    candidates: candidates.map((c) => ({ ...c, trail: byId.get(c.id) ?? [] })),
+    candidates: candidates.map((row) => ({ ...row, trail: byId.get(row.id) ?? [] })),
     stages: STAGES,
+    total: Number(countRow?.n || 0),
+    page: parsed.page,
+    pageSize: parsed.pageSize,
+    q: parsed.q,
   });
 });
 
@@ -185,9 +205,15 @@ track.delete("/api/candidates/:id", async (c) => {
   await c.env.DB_MAIN.prepare("DELETE FROM candidate_events WHERE candidate_id = ?")
     .bind(c.req.param("id"))
     .run();
+  const gone = await c.env.DB_MAIN.prepare("SELECT profile_url, display_name FROM candidates WHERE id = ?")
+    .bind(c.req.param("id"))
+    .first<{ profile_url: string | null; display_name: string }>();
   await c.env.DB_MAIN.prepare("DELETE FROM candidates WHERE id = ?")
     .bind(c.req.param("id"))
     .run();
+  if (gone?.profile_url) {
+    await c.env.DB_MAIN.prepare("DELETE FROM shortlist WHERE profile_url = ?").bind(gone.profile_url).run();
+  }
   c.executionCtx.waitUntil(publishLane(c.env, { type: "board.changed", candidateId: c.req.param("id") }));
   return c.json({ ok: true });
 });

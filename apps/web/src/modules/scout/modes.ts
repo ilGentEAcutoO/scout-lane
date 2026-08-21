@@ -1,4 +1,4 @@
-import { linkedinShopAdapter, withVendorStatus } from "./apify";
+import { apifySecretFor, linkedinShopAdapter, withVendorStatus } from "./apify";
 import type { SourceAdapter, SourceId, SourceStatus } from "./types";
 
 export const SOURCE_MODES = ["self", "shop", "link", "off"] as const;
@@ -50,7 +50,7 @@ export const GROUP_IDS: Record<SourceGroupId, SourceId[]> = {
 export const GROUP_LABELS: Record<SourceGroupId, string> = {
   thai_code: "GitHub / GitLab / คนบนโค้ด",
   community: "DevHub / HN / Stack / ชุมชนเปิด",
-  apify_web: "ร้านค้นเว็บเปิด",
+  apify_web: "ค้นเว็บสาธารณะ",
   linkedin: "LinkedIn People",
   job_boards: "JobsDB / JobThai / JobBKK",
 };
@@ -64,24 +64,24 @@ export const GROUP_SHORT: Record<SourceGroupId, string> = {
 };
 
 export const GROUP_HINTS: Record<SourceGroupId, string> = {
-  thai_code: "ดึงด้วย API สาธารณะของเรา",
-  community: "ไดเรกทอรีและฟอรัมที่เปิดโปรไฟล์",
-  apify_web: "ร้านขูดค้น Google เฉพาะโฮสต์สาธารณะ รวม Kaggle / Speaker Deck / Codeberg",
-  linkedin: "ค่าเริ่มเปิดหน้าค้นให้ HR · ร้านขูดได้เมื่อมีคีย์",
-  job_boards: "บอร์ดสมัครเข้า — ไม่ดึงรายชื่อจากประกาศ",
+  thai_code: "ดึงโปรไฟล์สาธารณะจาก GitHub, GitLab, Hugging Face และแพ็กเกจ npm / PyPI / crates",
+  community: "ดึงจาก Dev.to, DevHub, Hacker News, Stack Overflow, Reddit และฟอรัมเปิด",
+  apify_web: "ต้องมีคีย์ Apify ถึงจะเปิดได้ · ค้นโฮสต์สาธารณะอย่าง Kaggle, Speaker Deck, Codeberg",
+  linkedin: "ต้องมีคีย์ Apify ถึงจะเปิด LinkedIn ได้ · ดึงโปรไฟล์สาธารณะผ่าน Apify ไม่ใช้คุกกี้",
+  job_boards: "เปิดประกาศ JobsDB / JobThai / JobBKK ให้สมัครเอง — ไม่ดึงรายชื่อจากบอร์ด",
 };
 
 export const GROUP_ALLOWED: Record<SourceGroupId, SourceMode[]> = {
   thai_code: ["self", "off"],
   community: ["self", "off"],
   apify_web: ["shop", "off"],
-  linkedin: ["shop", "link", "off"],
+  linkedin: ["shop", "off"],
   job_boards: ["link", "off"],
 };
 
 export const MODE_LABELS: Record<SourceMode, string> = {
   self: "ดึงเอง",
-  shop: "ร้านขูด",
+  shop: "ผู้ให้บริการ",
   link: "เปิดลิงก์ให้ HR",
   off: "ปิด",
 };
@@ -90,7 +90,7 @@ export const DEFAULT_MODES: Record<SourceGroupId, SourceMode> = {
   thai_code: "self",
   community: "self",
   apify_web: "shop",
-  linkedin: "link",
+  linkedin: "shop",
   job_boards: "link",
 };
 
@@ -163,21 +163,35 @@ export async function loadSourceModes(env: Env): Promise<Record<SourceGroupId, S
   return parseModesJson(row?.value);
 }
 
-export function onModeFor(group: SourceGroupId, hasToken: boolean): SourceMode {
+export function onModeFor(group: SourceGroupId, _hasToken = false): SourceMode {
   const allowed = GROUP_ALLOWED[group];
   if (allowed.includes("self")) return "self";
-  if (group === "linkedin") return hasToken ? "shop" : "link";
   if (allowed.includes("shop")) return "shop";
   if (allowed.includes("link")) return "link";
   return "off";
+}
+
+export function shopGroups(): SourceGroupId[] {
+  return SOURCE_GROUPS.filter((group) => GROUP_ALLOWED[group].includes("shop"));
+}
+
+export function clampShopModes(
+  modes: Record<SourceGroupId, SourceMode>,
+  hasToken: boolean,
+): Record<SourceGroupId, SourceMode> {
+  if (hasToken) return { ...modes };
+  const next = { ...modes };
+  for (const group of shopGroups()) next[group] = "off";
+  return next;
 }
 
 export function readyFromModes(
   env: Env,
   adapters: SourceAdapter[],
   modes: Record<SourceGroupId, SourceMode>,
+  shopToken?: string,
 ): { ready: SourceAdapter[]; modes: Record<SourceGroupId, SourceMode>; hasToken: boolean } {
-  const hasToken = Boolean(env.APIFY_TOKEN?.trim());
+  const hasToken = Boolean((shopToken ?? env.APIFY_TOKEN)?.trim());
   const next = normalizeModes(modes);
   const ready = applySourceModes(withVendorStatus(adapters, env), next, {
     hasToken,
@@ -190,7 +204,8 @@ export async function readyAdapters(
   env: Env,
   adapters: SourceAdapter[],
 ): Promise<{ ready: SourceAdapter[]; modes: Record<SourceGroupId, SourceMode>; hasToken: boolean }> {
-  return readyFromModes(env, adapters, await loadSourceModes(env));
+  const { key } = await apifySecretFor(env);
+  return readyFromModes(env, adapters, await loadSourceModes(env), key);
 }
 
 export async function saveSourceModes(env: Env, modes: Record<SourceGroupId, SourceMode>): Promise<void> {

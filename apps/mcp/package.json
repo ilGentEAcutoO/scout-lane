@@ -1,6 +1,7 @@
 {
   "name": "@scout-lane/mcp",
   "private": true,
+  "license": "PolyForm-Noncommercial-1.0.0",
   "type": "module",
   "scripts": {
     "dev": "wrangler dev --port 8790 --persist-to ../../.wrangler/state",

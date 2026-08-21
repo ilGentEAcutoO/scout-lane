@@ -1,6 +1,6 @@
 {
   "$schema": "../../node_modules/wrangler/config-schema.json",
-  "name": "scoutlane-worker-mcp",
+  "name": "scout-lane-mcp",
   "main": "src/index.ts",
   "compatibility_date": "2026-08-17",
   "compatibility_flags": ["nodejs_compat"],
@@ -9,10 +9,15 @@
   "vars": {
     "APP_NAME": "Scout Lane MCP",
     "ENVIRONMENT": "production",
+    "APP_PUBLIC_URL": "https://scout-lane.sornkan.workers.dev",
+    "MCP_PUBLIC_URL": "https://scout-lane-mcp.sornkan.workers.dev",
     "CF_AI_GATEWAY_ID": "scoutlane-ai-gateway",
     "GLM_MODEL": "glm-5.2",
     "GLM_MODEL_EFFICIENT": "glm-4.7-flashx",
-    "GLM_MODEL_FREE": "glm-4.7-flash"
+    "GLM_MODEL_FREE": "glm-4.7-flash",
+    "CLAUDE_MODEL": "claude-sonnet-5",
+    "OPENAI_MODEL": "gpt-5.6-terra",
+    "GEMINI_MODEL": "gemini-3.5-flash"
   },
   "ai": { "binding": "AI" },
   "observability": {
@@ -32,5 +37,17 @@
       "binding": "KV_SESSIONS",
       "id": "69c207b012034579b7ca3c1b03d689bf"
     }
-  ]
+  ],
+  "r2_buckets": [
+    {
+      "binding": "R2_RESUMES",
+      "bucket_name": "scoutlane-r2-resumes"
+    }
+  ],
+  "queues": {
+    "producers": [
+      { "binding": "SCREEN_QUEUE", "queue": "scoutlane-queue-screen" },
+      { "binding": "SCOUT_QUEUE", "queue": "scoutlane-queue-scout" }
+    ]
+  }
 }

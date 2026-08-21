@@ -8,13 +8,17 @@ import { getPrompt } from "../llm/settings";
 import { track } from "../metrics";
 import { logTrail } from "../trail";
 import { publishLane } from "../do/lane-hub";
+import { extractResumeContact, gapsOf, mergeResumeContact, preferStoredContact } from "../resume-contact";
 
 export const screen = new Hono<{ Bindings: Env }>();
 
 screen.post("/api/screen", async (c) => {
   const actor = await requireActor(c.req.raw, c.env);
   requirePerm(actor, "screen.run");
-  if (!c.env.GLM_API_KEY && !c.env.AI) throw new HttpError(503, "llm_not_configured");
+  const { secretFor, loadProvider } = await import("../llm/providers");
+  const active = await loadProvider(c.env);
+  const { key } = await secretFor(c.env, active);
+  if (!key) throw new HttpError(503, "llm_not_configured");
 
   const length = Number(c.req.header("content-length") ?? "0");
   if (length > LIMITS.uploadBytesMax) throw new HttpError(413, "payload_too_large");
@@ -27,8 +31,6 @@ screen.post("/api/screen", async (c) => {
     text: String(form.get("text") ?? "").trim(),
   });
   const jobId = fields.jobId;
-  const name = fields.name;
-  const email = fields.email ?? "";
   const pasted = fields.text ?? "";
   const file = form.get("file");
   const job = await c.env.DB_MAIN.prepare("SELECT id, title, description FROM jobs WHERE id = ?")
@@ -47,25 +49,44 @@ screen.post("/api/screen", async (c) => {
       throw new HttpError(415, "pdf_only");
     }
     resumeKey = `resumes/${candidateId}.pdf`;
-    await c.env.R2_RESUMES.put(resumeKey, await file.arrayBuffer(), {
+    const bytes = await file.arrayBuffer();
+    await c.env.R2_RESUMES.put(resumeKey, bytes, {
       httpMetadata: { contentType: "application/pdf" },
     });
+    if (!inlineText) {
+      try {
+        inlineText = await pdfToText(bytes);
+      } catch {
+        inlineText = "";
+      }
+    }
   }
 
   if (!inlineText && !resumeKey) throw new HttpError(400, "resume_required");
 
+  const seeded = mergeResumeContact(extractResumeContact(inlineText), {
+    name: fields.name,
+    email: fields.email,
+  });
   await c.env.DB_MAIN.batch([
     c.env.DB_MAIN.prepare(
-      `INSERT INTO candidates (id, display_name, email, source, stage, resume_key, job_id)
-       VALUES (?, ?, ?, 'upload', 'applied', ?, ?)`,
-    ).bind(candidateId, name || "Untitled candidate", email || null, resumeKey, jobId),
+      `INSERT INTO candidates (id, display_name, email, phone, source, stage, resume_key, job_id)
+       VALUES (?, ?, ?, ?, 'upload', 'applied', ?, ?)`,
+    ).bind(
+      candidateId,
+      seeded.name,
+      seeded.email || null,
+      seeded.phone || null,
+      resumeKey,
+      jobId,
+    ),
     c.env.DB_MAIN.prepare(
-      `INSERT INTO applications (id, candidate_id, job_id, status) VALUES (?, ?, ?, 'queued')`,
+      `INSERT INTO applications (id, candidate_id, job_id, status, last_step) VALUES (?, ?, ?, 'queued', 'queued')`,
     ).bind(applicationId, candidateId, jobId),
   ]);
   await logTrail(c.env.DB_MAIN, candidateId, "entered", { stage: "applied", detail: "upload" });
 
-  if (resumeKey && !inlineText) {
+  if (resumeKey) {
     await c.env.SCREEN_QUEUE.send({
       applicationId,
       candidateId,
@@ -74,16 +95,21 @@ screen.post("/api/screen", async (c) => {
     });
     track(c.env, "screen_queued");
     c.executionCtx.waitUntil(publishLane(c.env, { type: "board.changed", candidateId }));
-    return c.json({ applicationId, status: "queued" }, 202);
-  }
-
-  if (!inlineText && resumeKey) {
-    const obj = await c.env.R2_RESUMES.get(resumeKey);
-    if (obj) inlineText = await pdfToText(await obj.arrayBuffer());
+    return c.json({
+      applicationId,
+      candidateId,
+      status: "queued",
+      candidate: {
+        displayName: seeded.name,
+        email: seeded.email,
+        phone: seeded.phone,
+        missing: seeded.missing,
+      },
+    }, 202);
   }
 
   const system = await getPrompt(c.env, "prompt.screen");
-  const scored = await glmJson<{
+  type ScreenScore = {
     skills: number;
     experience: number;
     culture: number;
@@ -94,7 +120,11 @@ screen.post("/api/screen", async (c) => {
     flags?: string[];
     questions?: string[];
     summary?: string;
-  }>(c.env, [
+    name?: string;
+    email?: string;
+    phone?: string;
+  };
+  const scored = await glmJson<ScreenScore>(c.env, [
     { role: "system", content: system },
     {
       role: "user",
@@ -128,8 +158,19 @@ screen.post("/api/screen", async (c) => {
     )
     .run();
 
-  await c.env.DB_MAIN.prepare("UPDATE candidates SET stage = 'screening' WHERE id = ?")
+  const existing = await c.env.DB_MAIN.prepare(
+    "SELECT display_name, email, phone FROM candidates WHERE id = ?",
+  )
     .bind(candidateId)
+    .first<{ display_name: string | null; email: string | null; phone: string | null }>();
+  const contact = preferStoredContact(
+    { displayName: existing?.display_name, email: existing?.email, phone: existing?.phone },
+    mergeResumeContact(extractResumeContact(inlineText), scored),
+  );
+  await c.env.DB_MAIN.prepare(
+    "UPDATE candidates SET display_name = ?, email = ?, phone = ?, stage = 'screening' WHERE id = ?",
+  )
+    .bind(contact.name, contact.email || null, contact.phone || null, candidateId)
     .run();
   await logTrail(c.env.DB_MAIN, candidateId, "screened", {
     stage: "screening",
@@ -141,14 +182,24 @@ screen.post("/api/screen", async (c) => {
   c.executionCtx.waitUntil(
     publishLane(c.env, { type: "screen.ready", applicationId, candidateId }),
   );
-  return c.json({ applicationId, status: "ready" });
+  return c.json({
+    applicationId,
+    candidateId,
+    status: "ready",
+    candidate: {
+      displayName: contact.name,
+      email: contact.email,
+      phone: contact.phone,
+      missing: contact.missing,
+    },
+  });
 });
 
 screen.get("/api/screen/:id", async (c) => {
   const actor = await requireActor(c.req.raw, c.env);
   requirePerm(actor, "screen.run");
   const row = await c.env.DB_MAIN.prepare(
-    `SELECT a.*, c.display_name, c.email, j.title AS job_title
+    `SELECT a.*, c.id AS candidate_id, c.display_name, c.email, c.phone, j.title AS job_title
      FROM applications a
      JOIN candidates c ON c.id = a.candidate_id
      JOIN jobs j ON j.id = a.job_id
@@ -185,7 +236,7 @@ screen.post("/api/screen/:id/pack", async (c) => {
   const pack = await glmJson(c.env, [
     { role: "system", content: system },
     { role: "user", content: JSON.stringify(row) },
-  ]);
+  ], { disableThinking: true });
   return c.json({ pack });
 });
 
@@ -195,6 +246,10 @@ function decodeApplication(row: Record<string, unknown>) {
     strengths: parseArr(row.strengths),
     flags: parseArr(row.flags),
     questions: parseArr(row.questions),
+    missing: gapsOf(
+      typeof row.display_name === "string" ? row.display_name : "",
+      typeof row.email === "string" ? row.email : "",
+    ),
   };
 }
 

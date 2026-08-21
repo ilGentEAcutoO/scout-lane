@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { interviewSchema, parseBody } from "@scout-lane/core";
+import { interviewPatchSchema, interviewSchema, parseBody } from "@scout-lane/core";
 import { requireActor, requirePerm } from "../security/actor";
 import { readJson } from "../security/body";
 import { HttpError } from "../http/errors";
@@ -11,6 +11,7 @@ import {
   consumeOauthState,
   createMeet,
   deleteMeet,
+  updateMeet,
   exchangeCode,
   googleAuthUrl,
   googleConfigured,
@@ -77,7 +78,7 @@ schedule.get("/api/schedule/busy", async (c) => {
   requirePerm(actor, "interviews.read");
   const from = Date.parse(c.req.query("from") ?? "");
   const to = Date.parse(c.req.query("to") ?? "");
-  if (Number.isNaN(from) || Number.isNaN(to) || to <= from || to - from > 14 * 86_400_000) {
+  if (Number.isNaN(from) || Number.isNaN(to) || to <= from || to - from > 45 * 86_400_000) {
     throw new HttpError(400, "invalid_range");
   }
   const who = c.req.query("who") ?? "all";
@@ -120,15 +121,15 @@ schedule.get("/api/schedule/oauth/callback", async (c) => {
   const state = c.req.query("state") ?? "";
   const payload = await consumeOauthState(c.env, state);
   if (!code || !payload) {
-    return c.redirect("/app/?tab=schedule&google=denied", 302);
+    return c.redirect("/app/schedule?google=denied", 302);
   }
   try {
     await exchangeCode(c.env, code, tokenKeyFor(payload.kind, payload.userId));
   } catch {
-    return c.redirect("/app/?tab=schedule&google=fail", 302);
+    return c.redirect("/app/schedule?google=fail", 302);
   }
   const dest = payload.kind === "me" ? "profile" : "schedule";
-  return c.redirect(`/app/?tab=${dest}&google=ok`, 302);
+  return c.redirect(dest === "profile" ? "/app/profile?google=ok" : "/app/schedule?google=ok", 302);
 });
 
 schedule.get("/api/interviews", async (c) => {
@@ -190,6 +191,71 @@ schedule.post("/api/interviews", async (c) => {
   }, 201);
 });
 
+schedule.patch("/api/interviews/:id", async (c) => {
+  const actor = await requireActor(c.req.raw, c.env);
+  requirePerm(actor, "interviews.write");
+  const id = c.req.param("id");
+  const body = parseBody(interviewPatchSchema, await readJson(c.req.raw));
+  const row = await c.env.DB_MAIN.prepare(
+    `SELECT id, candidate_id, starts_at, minutes, calendar_event_id, meet_url, interviewer_id
+     FROM interviews WHERE id = ?`,
+  )
+    .bind(id)
+    .first<{
+      id: string;
+      candidate_id: string;
+      starts_at: string;
+      minutes: number | null;
+      calendar_event_id: string | null;
+      meet_url: string | null;
+      interviewer_id: string | null;
+    }>();
+  if (!row) throw new HttpError(404, "not_found");
+
+  const candidateId = body.candidateId ?? row.candidate_id;
+  const startsAt = body.startsAt ?? row.starts_at;
+  const minutes = body.minutes ?? row.minutes ?? 45;
+  const interviewerId = body.interviewerId === "" ? null : (body.interviewerId ?? row.interviewer_id);
+
+  const start = Date.parse(startsAt);
+  if (Number.isNaN(start)) throw new HttpError(400, "invalid_time");
+  const end = start + minutes * 60_000;
+  const startIso = new Date(start).toISOString();
+
+  const lock = c.env.SLOT_LOCK.getByName("hq");
+  const reserved = await lock.reserve(id, start, end);
+  if (!reserved.ok) throw new HttpError(409, "conflict");
+
+  try {
+    await c.env.DB_MAIN.prepare(
+      "UPDATE interviews SET candidate_id = ?, starts_at = ?, minutes = ?, interviewer_id = ? WHERE id = ?",
+    )
+      .bind(candidateId, startIso, minutes, interviewerId, id)
+      .run();
+  } catch (err) {
+    await lock.reserve(id, Date.parse(row.starts_at), Date.parse(row.starts_at) + (row.minutes || 45) * 60_000);
+    throw err;
+  }
+
+  if (candidateId !== row.candidate_id) {
+    await c.env.DB_MAIN.prepare(
+      "UPDATE candidates SET stage = 'prescreen' WHERE id = ? AND stage = 'interview'",
+    )
+      .bind(row.candidate_id)
+      .run();
+    await c.env.DB_MAIN.prepare(
+      "UPDATE candidates SET stage = 'interview' WHERE id = ? AND stage IN ('applied','screening','prescreen')",
+    )
+      .bind(candidateId)
+      .run();
+  }
+
+  await logTrail(c.env.DB_MAIN, candidateId, "rescheduled", { stage: "interview", detail: startIso });
+  c.executionCtx.waitUntil(syncMeetEvent(c.env, { ...row, candidate_id: candidateId, interviewer_id: interviewerId }, start, end));
+  c.executionCtx.waitUntil(publishLane(c.env, { type: "calendar.changed", candidateId }));
+  return c.json({ id, startsAt: startIso, minutes });
+});
+
 schedule.delete("/api/interviews/:id", async (c) => {
   const actor = await requireActor(c.req.raw, c.env);
   requirePerm(actor, "interviews.write");
@@ -214,6 +280,50 @@ schedule.delete("/api/interviews/:id", async (c) => {
   c.executionCtx.waitUntil(publishLane(c.env, { type: "calendar.changed", candidateId: row.candidate_id }));
   return c.json({ ok: true });
 });
+
+async function meetCalendarKey(env: Env, interviewerId?: string | null): Promise<string> {
+  const mode = await calendarMode(env);
+  let key = tokenKeyFor("team");
+  if (interviewerId && (mode === "personal" || mode === "both")) {
+    const personal = tokenKeyFor("me", interviewerId);
+    if (await hasRefreshToken(env, personal)) key = personal;
+  }
+  return key;
+}
+
+async function syncMeetEvent(
+  env: Env,
+  row: { id: string; candidate_id: string; calendar_event_id: string | null; interviewer_id: string | null },
+  start: number,
+  end: number,
+): Promise<void> {
+  const eventId = row.calendar_event_id;
+  if (!eventId || eventId === "local" || eventId === "mcp") {
+    await writeBriefing(env, row.id, row.candidate_id, start, end, row.interviewer_id ?? undefined);
+    return;
+  }
+  const person = await env.DB_MAIN.prepare("SELECT display_name FROM candidates WHERE id = ?")
+    .bind(row.candidate_id)
+    .first<{ display_name: string }>();
+  const key = await meetCalendarKey(env, row.interviewer_id);
+  const updated = await updateMeet(
+    env,
+    eventId,
+    {
+      summary: `สัมภาษณ์ · ${person?.display_name ?? ""}`,
+      start: new Date(start).toISOString(),
+      end: new Date(end).toISOString(),
+    },
+    key,
+  );
+  if (!updated) {
+    await writeBriefing(env, row.id, row.candidate_id, start, end, row.interviewer_id ?? undefined);
+    return;
+  }
+  if (updated.meetUrl) {
+    await env.DB_MAIN.prepare("UPDATE interviews SET meet_url = ? WHERE id = ?").bind(updated.meetUrl, row.id).run();
+  }
+}
 
 async function writeBriefing(
   env: Env,
@@ -255,12 +365,7 @@ async function writeBriefing(
     briefing = app.summary ?? "";
   }
 
-  const mode = await calendarMode(env);
-  let key = tokenKeyFor("team");
-  if (interviewerId && (mode === "personal" || mode === "both")) {
-    const personal = tokenKeyFor("me", interviewerId);
-    if (await hasRefreshToken(env, personal)) key = personal;
-  }
+  const key = await meetCalendarKey(env, interviewerId);
   const created = await createMeet(env, {
     summary: `สัมภาษณ์ · ${app.display_name}${app.title ? ` · ${app.title}` : ""}`,
     description: briefing,

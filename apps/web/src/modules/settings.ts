@@ -1,7 +1,16 @@
 import { Hono } from "hono";
-import { calendarSettingsSchema, parseBody, promptSaveSchema, sourceModesSchema } from "@scout-lane/core";
+import {
+  AI_PROVIDERS,
+  aiSettingsSchema,
+  aiStatusSchema,
+  calendarSettingsSchema,
+  parseBody,
+  promptSaveSchema,
+  sourceModesSchema,
+} from "@scout-lane/core";
 import { requireActor, requirePerm } from "../security/actor";
 import { readJson } from "../security/body";
+import { clientIp, rateLimit } from "../security/rate-limit";
 import { listPrompts, savePrompt } from "../llm/settings";
 import {
   GROUP_ALLOWED,
@@ -9,11 +18,14 @@ import {
   GROUP_LABELS,
   MODE_LABELS,
   SOURCE_GROUPS,
+  clampShopModes,
   loadSourceModes,
   normalizeModes,
+  onModeFor,
   saveSourceModes,
 } from "./scout/modes";
-import { apifyStatus } from "./scout/apify";
+import { apifySecretFor, saveApifyKey } from "./scout/apify";
+import { listAiStatus, saveProvider, saveProviderKey } from "../llm/providers";
 
 export const settings = new Hono<{ Bindings: Env }>();
 
@@ -37,29 +49,72 @@ settings.put("/api/settings/calendar", async (c) => {
 settings.get("/api/settings/sources", async (c) => {
   const actor = await requireActor(c.req.raw, c.env);
   requirePerm(actor, "settings.read");
-  const modes = await loadSourceModes(c.env);
+  c.header("Cache-Control", "no-store");
+  const stored = await loadSourceModes(c.env);
+  const shop = await apifySecretFor(c.env);
+  const hasShopKey = Boolean(shop.key);
+  const modes = clampShopModes(stored, hasShopKey);
   return c.json({
     modes,
-    hasShopKey: Boolean(c.env.APIFY_TOKEN?.trim()),
-    shopStatus: apifyStatus(c.env),
+    hasShopKey,
+    shopSource: shop.source,
     modeLabels: MODE_LABELS,
-    groups: SOURCE_GROUPS.map((id) => ({
-      id,
-      label: GROUP_LABELS[id],
-      hint: GROUP_HINTS[id],
-      mode: modes[id],
-      allowed: GROUP_ALLOWED[id],
-    })),
+    groups: SOURCE_GROUPS.map((id) => {
+      const needsKey = GROUP_ALLOWED[id].includes("shop");
+      const locked = needsKey && !hasShopKey;
+      return {
+        id,
+        label: GROUP_LABELS[id],
+        hint: GROUP_HINTS[id],
+        mode: locked ? "off" : modes[id],
+        onMode: onModeFor(id, hasShopKey),
+        allowed: GROUP_ALLOWED[id],
+        needsKey,
+        locked,
+      };
+    }),
   });
 });
 
 settings.put("/api/settings/sources", async (c) => {
   const actor = await requireActor(c.req.raw, c.env);
   requirePerm(actor, "settings.write");
+  await rateLimit(c.env.KV_SESSIONS, `src-settings:${actor.userId}:${clientIp(c.req.raw)}`, 10, 60);
   const body = parseBody(sourceModesSchema, await readJson(c.req.raw));
-  const modes = normalizeModes(body.modes);
+  if (typeof body.shopKey === "string") await saveApifyKey(c.env, body.shopKey);
+  const shop = await apifySecretFor(c.env);
+  const hasShopKey = Boolean(shop.key);
+  const modes = clampShopModes(normalizeModes(body.modes), hasShopKey);
   await saveSourceModes(c.env, modes);
-  return c.json({ ok: true, modes });
+  return c.json({
+    ok: true,
+    modes,
+    hasShopKey,
+    shopSource: shop.source,
+  });
+});
+
+settings.get("/api/settings/ai", async (c) => {
+  const actor = await requireActor(c.req.raw, c.env);
+  requirePerm(actor, "settings.read");
+  c.header("Cache-Control", "no-store");
+  return c.json(aiStatusSchema.parse(await listAiStatus(c.env)));
+});
+
+settings.put("/api/settings/ai", async (c) => {
+  const actor = await requireActor(c.req.raw, c.env);
+  requirePerm(actor, "settings.write");
+  await rateLimit(c.env.KV_SESSIONS, `ai-settings:${actor.userId}:${clientIp(c.req.raw)}`, 10, 60);
+  const body = parseBody(aiSettingsSchema, await readJson(c.req.raw));
+  if (body.provider) await saveProvider(c.env, body.provider);
+  if (body.keys) {
+    for (const id of AI_PROVIDERS) {
+      if (!Object.prototype.hasOwnProperty.call(body.keys, id)) continue;
+      const value = body.keys[id] ?? "";
+      await saveProviderKey(c.env, id, value);
+    }
+  }
+  return c.json({ ok: true, ...aiStatusSchema.parse(await listAiStatus(c.env)) });
 });
 
 settings.get("/api/settings/prompts", async (c) => {

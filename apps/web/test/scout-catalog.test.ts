@@ -21,10 +21,11 @@ describe("source lanes", () => {
     counts: { github: 8, reddit: 0 },
   });
 
-  it("never treats LinkedIn as a live fetch", () => {
+  it("does not fetch LinkedIn until the Apify adapter is live", () => {
     expect(laneHas(lanes, "linkedin")).toBe("blocked");
     expect(lanes.live.some((row) => row.id === "linkedin")).toBe(false);
-    expect(lanes.blocked.find((row) => row.id === "linkedin")?.url).toMatch(/^https:\/\/www\.linkedin\.com\//);
+    expect(lanes.hr_click.some((row) => row.id === "linkedin")).toBe(false);
+    expect(lanes.blocked.find((row) => row.id === "linkedin")?.url).toBeUndefined();
   });
 
   it("keeps login walls and inbound job boards out of shortlist sources", () => {
@@ -46,8 +47,9 @@ describe("source lanes", () => {
     expect(new Set(ids).size).toBe(ids.length);
   });
 
-  it("explains that LinkedIn is not fetched", () => {
-    expect(analysis.headline).toMatch(/LinkedIn ไม่ดึง/);
+  it("explains that LinkedIn uses Apify and is not an HR link", () => {
+    expect(analysis.headline).toMatch(/Apify/);
+    expect(analysis.headline).not.toMatch(/เปิดลิงก์ให้ HR/);
     expect(sourceLabel("linkedin")).toBe("LinkedIn People");
   });
 
@@ -57,17 +59,17 @@ describe("source lanes", () => {
       modes: { ...DEFAULT_MODES, linkedin: "shop" },
     });
     expect(laneHas(shop.lanes, "linkedin")).toBe("live");
-    expect(shop.analysis.headline).toMatch(/ร้านขูด/);
+    expect(shop.analysis.headline).toMatch(/Apify/);
     expect(analysisFor({ ...DEFAULT_MODES, linkedin: "shop" }).headline).toMatch(/ไม่ใช้คุกกี้/);
   });
 
-  it("puts LinkedIn on the HR-click lane when mode is link", () => {
+  it("keeps LinkedIn off the HR-click lane on the default shop mode", () => {
     const linked = buildSourceLanes({
       adapters,
       links: officialSearchUrls("Tech Lead MCP Bangkok"),
       modes: DEFAULT_MODES,
     });
-    expect(laneHas(linked.lanes, "linkedin")).toBe("hr_click");
+    expect(laneHas(linked.lanes, "linkedin")).not.toBe("hr_click");
     expect(linked.lanes.live.some((row) => row.id === "linkedin")).toBe(false);
   });
 

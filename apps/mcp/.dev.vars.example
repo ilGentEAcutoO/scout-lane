@@ -1,3 +1,12 @@
 BOOTSTRAP_USERNAME=admin
 BOOTSTRAP_PASSWORD=
+# generate: openssl rand -base64 32
 SESSION_SECRET=
+# must match the web worker so stored LLM keys can be decrypted
+# generate: openssl rand -base64 32
+KEY_ENCRYPTION_KEY=
+LLM_PROVIDER=glm
+GLM_API_KEY=
+ANTHROPIC_API_KEY=
+OPENAI_API_KEY=
+GEMINI_API_KEY=

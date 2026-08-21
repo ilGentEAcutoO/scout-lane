@@ -1,6 +1,6 @@
 {
   "$schema": "../../node_modules/wrangler/config-schema.json",
-  "name": "scoutlane-worker-app",
+  "name": "scout-lane",
   "main": "src/index.ts",
   "compatibility_date": "2026-08-17",
   "compatibility_flags": ["nodejs_compat"],
@@ -19,7 +19,10 @@
     "GLM_MODEL": "glm-5.2",
     "GLM_MODEL_EFFICIENT": "glm-4.7-flashx",
     "GLM_MODEL_FREE": "glm-4.7-flash",
-    "MCP_PUBLIC_URL": "https://scoutlane-worker-mcp.sornkan.workers.dev"
+    "CLAUDE_MODEL": "claude-sonnet-5",
+    "OPENAI_MODEL": "gpt-5.6-terra",
+    "GEMINI_MODEL": "gemini-3.5-flash",
+    "MCP_PUBLIC_URL": "https://scout-lane-mcp.sornkan.workers.dev"
   },
   "observability": {
     "enabled": true,
@@ -55,10 +58,12 @@
   ],
   "queues": {
     "producers": [
-      { "binding": "SCREEN_QUEUE", "queue": "scoutlane-queue-screen" }
+      { "binding": "SCREEN_QUEUE", "queue": "scoutlane-queue-screen" },
+      { "binding": "SCOUT_QUEUE", "queue": "scoutlane-queue-scout" }
     ],
     "consumers": [
-      { "queue": "scoutlane-queue-screen", "max_batch_size": 1, "max_retries": 2 }
+      { "queue": "scoutlane-queue-screen", "max_batch_size": 1, "max_retries": 2 },
+      { "queue": "scoutlane-queue-scout", "max_batch_size": 1, "max_retries": 1 }
     ]
   },
   "durable_objects": {

@@ -17,6 +17,7 @@ import { createSession, destroySession, readSession } from "../security/session"
 import { requireActor, requirePerm } from "../security/actor";
 import { HttpError } from "../http/errors";
 import { logInfo } from "../security/log";
+import { loadProvider, secretFor } from "../llm/providers";
 
 export const auth = new Hono<{ Bindings: Env }>();
 
@@ -26,10 +27,14 @@ auth.use("*", async (c, next) => {
 });
 
 auth.get("/api/session", async (c) => {
+  c.header("x-has-cookie", c.req.header("cookie") ? "1" : "0");
   const session = await readSession(c.req.raw, c.env);
+  c.header("x-has-session", session ? "1" : "0");
   if (!session) return c.json({ authenticated: false, limits: LIMITS });
   try {
     const actor = await requireActor(c.req.raw, c.env);
+    const provider = await loadProvider(c.env);
+    const { key } = await secretFor(c.env, provider);
     return c.json({
       authenticated: true,
       userId: actor.userId,
@@ -37,6 +42,7 @@ auth.get("/api/session", async (c) => {
       role: actor.role,
       can: capabilities(actor.role),
       limits: LIMITS,
+      aiReady: Boolean(key),
     });
   } catch {
     return c.json({ authenticated: false, limits: LIMITS });
@@ -45,14 +51,43 @@ auth.get("/api/session", async (c) => {
 
 auth.post("/api/login", async (c) => {
   await rateLimit(c.env.KV_SESSIONS, `login:${clientIp(c.req.raw)}`, 5, 60);
-  const parsed = parseBody(loginSchema, await readJson(c.req.raw));
+  const ct = c.req.header("content-type") || "";
+  let parsed: { username: string; password: string };
+  let nextField = "";
+  if (ct.includes("application/json")) {
+    parsed = parseBody(loginSchema, await readJson(c.req.raw));
+  } else {
+    const form = await c.req.parseBody();
+    nextField = String(form.next ?? "");
+    parsed = parseBody(loginSchema, {
+      username: String(form.username ?? ""),
+      password: String(form.password ?? ""),
+    });
+  }
   const user = await verifyUser(c.env.DB_MAIN, parsed.username, parsed.password);
+  const asForm = !(c.req.header("content-type") || "").includes("application/json");
   if (!user) {
     logInfo("login_failed", { ip: clientIp(c.req.raw) });
+    if (asForm) return c.redirect("/?e=1", 303);
     throw new HttpError(401, "invalid_credentials");
   }
   const cookie = await createSession(c.env, new URL(c.req.url), user);
   logInfo("login_ok", { ip: clientIp(c.req.raw) });
+  if (asForm) {
+    const { safeNextPath } = await import("./oauth");
+    const next = safeNextPath(nextField) || "/app/";
+    return new Response(
+      `<!doctype html><meta http-equiv="refresh" content="0;url=${next}"><a href="${next}">เปิดแอป</a>`,
+      {
+        status: 302,
+        headers: {
+          "content-type": "text/html; charset=utf-8",
+          location: next,
+          "set-cookie": cookie,
+        },
+      },
+    );
+  }
   return new Response(JSON.stringify({ ok: true, username: user.username, role: user.role }), {
     status: 200,
     headers: {

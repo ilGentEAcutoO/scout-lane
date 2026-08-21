@@ -29,6 +29,16 @@ export const LIMITS = {
   uploadBytesMax: 5 * 1024 * 1024,
 } as const;
 
+/** Hire path. `rejected` is a drop status outside this order, not a last step. */
+export const PIPELINE = [
+  "applied",
+  "screening",
+  "prescreen",
+  "interview",
+  "offer",
+  "hired",
+] as const;
+
 export const STAGES = [
   "applied",
   "screening",

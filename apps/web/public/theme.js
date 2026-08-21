@@ -28,7 +28,7 @@ function swatches(kind) {
     .join("");
   if (kind === "board") {
     return `<h3>พื้นหลัง</h3>
-      <p class="muted">สว่างหรือมืด — โทนส้ม Mira</p>
+      <p class="muted">สว่างหรือมืด — โทนไลแลค</p>
       <div class="looks-row">${themeBtns}</div>`;
   }
   const next = theme === "dark" ? "light" : "dark";

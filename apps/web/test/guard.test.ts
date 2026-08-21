@@ -38,6 +38,18 @@ describe("source modes schema", () => {
     expect(parsed).toEqual({ modes: { linkedin: "shop" } });
     expect(JSON.stringify(parsed)).not.toMatch(/cookie|actorId|apify_api/i);
   });
+
+  it("accepts a shop key without echoing cookies or actor ids", () => {
+    const parsed = sourceModesSchema.parse({
+      modes: { apify_web: "shop" },
+      shopKey: "apify_api_new",
+      cookie: "li_at=secret",
+      actorId: "evil/scraper",
+    });
+    expect(parsed.modes).toEqual({ apify_web: "shop" });
+    expect(parsed.shopKey).toBe("apify_api_new");
+    expect(JSON.stringify(parsed)).not.toMatch(/li_at|evil\/scraper/);
+  });
 });
 
 describe("candidate profile url", () => {

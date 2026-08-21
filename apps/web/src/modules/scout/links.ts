@@ -30,7 +30,6 @@ export function officialSearchUrls(query: string, location = "Bangkok"): Officia
     { id: "jobsdb", label: "JobsDB ใบงาน", url: `https://th.jobsdb.com/${q}-jobs` },
     { id: "jobthai", label: "JobThai ใบงาน", url: `https://www.jobthai.com/th/jobs?keyword=${q}` },
     { id: "jobbkk", label: "JobBKK ใบงาน", url: `https://www.jobbkk.com/jobs/lists/${q}` },
-    { id: "facebook", label: "Facebook", url: `https://www.facebook.com/search/posts/?q=${q}` },
     { id: "meetup", label: "Meetup / GDG", url: `https://www.meetup.com/find/?keywords=${q}&location=${loc}` },
     { id: "blognone", label: "Blognone", url: `https://www.google.com/search?q=site%3Ablognone.com+${q}` },
     { id: "wellfound", label: "Wellfound", url: `https://wellfound.com/jobs?q=${q}` },

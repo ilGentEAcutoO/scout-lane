@@ -9,8 +9,9 @@ BOOTSTRAP_USERNAME=admin
 BOOTSTRAP_PASSWORD=
 
 # ──────────────────────────────────────────
-# GLM  (server-side only)
-# get from: https://z.ai/manage-apikey/apikey-list
+# LLM
+# Provider keys are entered in Settings → โมเดล and stored encrypted in D1.
+# GLM_API_KEY / ANTHROPIC_API_KEY / OPENAI_API_KEY / GEMINI_API_KEY in env are ignored.
 # ──────────────────────────────────────────
 LLM_PROVIDER=glm
 GLM_API_KEY=
@@ -18,6 +19,15 @@ GLM_BASE_URL=https://api.z.ai/api/paas/v4
 GLM_MODEL=glm-5.2
 GLM_MODEL_EFFICIENT=glm-4.7-flashx
 GLM_MODEL_FREE=glm-4.7-flash
+ANTHROPIC_API_KEY=
+CLAUDE_MODEL=claude-sonnet-5
+OPENAI_API_KEY=
+OPENAI_MODEL=gpt-5.6-terra
+GEMINI_API_KEY=
+GEMINI_MODEL=gemini-3.5-flash
+# dedicated wrap key for stored LLM secrets (survives SESSION_SECRET rotation)
+# generate: openssl rand -base64 32
+KEY_ENCRYPTION_KEY=
 # Cloudflare account id enables AI Gateway proxy (scoutlane-ai-gateway)
 # get from: https://dash.cloudflare.com
 CF_ACCOUNT_ID=

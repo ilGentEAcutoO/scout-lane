@@ -58,7 +58,7 @@ export async function readGithubUser(
 async function searchUsers(query: string, headers: Record<string, string>) {
   const url = new URL("https://api.github.com/search/users");
   url.searchParams.set("q", query);
-  url.searchParams.set("per_page", "8");
+  url.searchParams.set("per_page", "30");
   const res = await fetch(url, { headers });
   if (!res.ok) return [] as Array<{ id: number; login: string; html_url: string; url: string; type?: string }>;
   const body = (await res.json()) as {
@@ -80,7 +80,7 @@ export const githubAdapter: SourceAdapter = {
       for (const row of extra) {
         if (seen.has(row.id)) continue;
         items.push(row);
-        if (items.length >= 8) break;
+        if (items.length >= 30) break;
       }
     }
 

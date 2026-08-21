@@ -4,16 +4,23 @@ export type LaneEvent = {
   type:
     | "screen.ready"
     | "screen.failed"
+    | "screen.progress"
     | "board.changed"
     | "calendar.changed"
     | "scout.changed"
-    | "scout.progress";
+    | "scout.progress"
+    | "scout.ready"
+    | "scout.failed";
   applicationId?: string;
   candidateId?: string;
+  jobId?: string;
   runId?: string;
   source?: string;
   state?: string;
   count?: number;
+  next?: string;
+  step?: string;
+  via?: "queue" | "llm" | "apify" | "public";
   message?: string;
   at: number;
 };

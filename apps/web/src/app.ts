@@ -4,6 +4,7 @@ import { HttpError, jsonError } from "./http/errors";
 import { logError } from "./security/log";
 import { applySecurityHeaders } from "./security/headers";
 import { assertSameOrigin } from "./security/csrf";
+import { oauth } from "./modules/oauth";
 import { auth } from "./modules/auth";
 import { users } from "./modules/users";
 import { jobs } from "./modules/jobs";
@@ -32,6 +33,7 @@ app.onError((err, c) => {
 
 app.get("/api/health", (c) => c.json({ ok: true, name: c.env.APP_NAME }));
 
+app.route("/", oauth);
 app.route("/", auth);
 app.route("/", users);
 app.route("/", jobs);

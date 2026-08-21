@@ -90,8 +90,8 @@ await step("S03", "admin enters workspace", async () => {
 });
 
 await step("S04", "scout shows H+ JD", async () => {
-  await page.locator("aside nav button[data-tab=scout]").click();
-  const jd = await page.locator("#jd-text").inputValue();
+  await page.locator("aside nav [data-tab=scout]").click();
+  const jd = await page.locator("#jd-notes").inputValue();
   if (!jd.includes("Hotel Plus") && !jd.includes("Tech Lead")) throw new Error("missing H+ JD");
   await page.locator("#source-picks").waitFor({ timeout: 20000 });
   const picks = await page.locator("#source-picks").innerText();
@@ -101,14 +101,14 @@ await step("S04", "scout shows H+ JD", async () => {
 });
 
 await step("S05", "pipeline filters exist", async () => {
-  await page.locator("aside nav button[data-tab=board]").click();
+  await page.locator("aside nav [data-tab=board]").click();
   await page.locator("#filter-stage").waitFor();
   await page.locator("#board").waitFor();
   await shot("05-board");
 });
 
 await step("S06", "week calendar grid", async () => {
-  await page.locator("aside nav button[data-tab=schedule]").click();
+  await page.locator("aside nav [data-tab=schedule]").click();
   await page.locator("#week-grid").waitFor();
   const cells = await page.locator("#week-grid .c").count();
   if (cells < 20) throw new Error(`expected hour cells, got ${cells}`);
@@ -116,7 +116,7 @@ await step("S06", "week calendar grid", async () => {
 });
 
 await step("S07", "profile password and MCP connector", async () => {
-  await page.locator("aside nav button[data-tab=profile]").click();
+  await page.locator("aside nav [data-tab=profile]").click();
   await page.locator("#me-password").waitFor();
   await page.locator("#mcp-url").waitFor();
   const mcp = (await page.locator("#mcp-url").innerText()).trim();

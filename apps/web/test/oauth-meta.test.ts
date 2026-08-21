@@ -10,7 +10,7 @@ import {
 } from "../../mcp/src/oauth";
 
 describe("oauth discovery", () => {
-  const origin = "https://scoutlane-worker-mcp.example.workers.dev";
+  const origin = "https://scout-lane-mcp.example.workers.dev";
 
   it("points connectors at login and the mcp resource", () => {
     const as = authorizationServerMeta(origin);

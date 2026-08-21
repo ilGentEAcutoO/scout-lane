@@ -1,15 +1,26 @@
 import type { SourceId } from "./types";
 
-/** Only these adapters may put people on the shortlist. */
+/** Person adapters that may put people on the shortlist when their group is on. */
 export const CANDIDATE_SOURCES = new Set<SourceId>([
   "github",
+  "github_repos",
   "github_th",
   "github_bkk",
+  "github_langchain",
+  "gitlab",
+  "gitlab_projects",
+  "huggingface",
+  "hf_spaces",
   "stackoverflow",
+  "stack_ai",
+  "stack_ds",
   "devto",
   "devhub",
   "hn",
-  "gitlab",
+  "reddit",
+  "lobsters",
+  "hf_forum",
+  "openai_forum",
   "apify_web",
   "linkedin",
 ]);
@@ -51,8 +62,72 @@ export function looksLikeEngineer(text: string): boolean {
   );
 }
 
+export function looksLikeMarketing(text: string): boolean {
+  return /market(ing|er)?|brand|content|campaign|social media|growth|seo|\bads\b|creative|\bpr\b|สื่อ|การตลาด|นักการตลาด|แบรนด์|คอนเทนต์|โฆษณา|ประชาสัมพันธ์/i.test(
+    text,
+  );
+}
+
+export function craftFitsJd(profile: string, jd: string): boolean {
+  if (looksLikeMarketing(jd)) return looksLikeMarketing(profile);
+  if (looksLikeEngineer(jd)) return looksLikeEngineer(profile);
+  return true;
+}
+
+export function fallbackQuery(jd: string): string {
+  const text = jd.replace(/\s+/g, " ").trim();
+  const loc = /bangkok|กรุงเทพ/i.test(text)
+    ? "location:Bangkok"
+    : /thailand|ไทย/i.test(text)
+      ? "location:Thailand"
+      : "location:Bangkok";
+  const keys = [
+    "performance",
+    "growth",
+    "social",
+    "marketing",
+    "brand",
+    "content",
+    "campaign",
+    "การตลาด",
+    "แบรนด์",
+    "คอนเทนต์",
+    "โซเชียล",
+    "จ่ายสื่อ",
+    "typescript",
+    "javascript",
+    "react",
+    "python",
+    "MCP",
+    "RAG",
+    "LLM",
+    "automation",
+  ];
+  const picked: string[] = [];
+  for (const key of keys) {
+    if (new RegExp(key, "i").test(text) && !picked.some((row) => row.toLowerCase() === key.toLowerCase())) {
+      picked.push(key);
+    }
+    if (picked.length >= 4) break;
+  }
+  if (!picked.length) {
+    const tokens = text.split(/[^\p{L}\p{N}+]+/u).filter((token) => token.length >= 4).slice(0, 4);
+    picked.push(...tokens);
+  }
+  return `${picked.join(" ") || "hiring"} ${loc}`.slice(0, 80);
+}
+
 export function inThailand(text: string | null | undefined): boolean {
-  return /bangkok|กรุงเทพ|thailand|ไทย/i.test(text || "");
+  return /bangkok|กรุงเทพ|thailand|ไทย|chiang mai|เชียงใหม่|phuket|ภูเก็ต|pattaya|nonthaburi|นนทบุรี|khon kaen|ขอนแก่น|hat yai|หาดใหญ่/i.test(
+    text || "",
+  );
+}
+
+const CJK_NAME = /[\u3400-\u9FFF\uF900-\uFAFF\u3040-\u30FF\uAC00-\uD7AF]/;
+
+/** Han / kana / hangul in the display name — not a Thai or English card. */
+export function looksCjkName(text: string | null | undefined): boolean {
+  return CJK_NAME.test(text || "");
 }
 
 /** Public signal they are Thai or work in Thai — not a nationality check. */
